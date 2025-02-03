@@ -1,7 +1,12 @@
 FROM node:18
 
 WORKDIR /usr/src/app
-COPY package*.json ./
+
+COPY package*.json tsconfig.json vite.config.ts ./
 RUN npm install
+
 COPY . .
-CMD ["npm", "start"]
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
