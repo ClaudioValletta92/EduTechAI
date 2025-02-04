@@ -1,9 +1,10 @@
 // src/components/Sidebar.tsx
 import React from "react";
-import { Link } from "react-router-dom"; // if using React Router
+import { Link } from "react-router-dom"; // using React Router for navigation
+import AddProjectButton from "./AddProjectButton"; // adjust the path if needed
 
 function Sidebar() {
-  // Example inline style — you can replace with CSS
+  // Inline styles (you can replace these with your CSS)
   const sidebarStyle: React.CSSProperties = {
     width: "200px",
     background: "#eee",
@@ -20,7 +21,6 @@ function Sidebar() {
       <h3>Menu</h3>
       <ul style={navListStyle}>
         <li>
-          {/* If using React Router, Link to different routes */}
           <Link to="/">Home</Link>
         </li>
         <li>
@@ -33,7 +33,12 @@ function Sidebar() {
 
       <hr />
 
-      {/* Example placeholders for future buttons */}
+      {/* Reusable AddProjectButton component */}
+      <AddProjectButton />
+
+      <hr />
+
+      {/* Existing sidebar buttons */}
       <button style={{ display: "block", marginTop: "1rem" }}>Settings</button>
       <button style={{ display: "block", marginTop: "0.5rem" }}>Help</button>
     </aside>
