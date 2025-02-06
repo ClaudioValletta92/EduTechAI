@@ -14,11 +14,11 @@ WORKDIR /usr/src/app
 COPY requirements.txt .
 RUN pip install --upgrade pip setuptools wheel
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 
 # Scarichiamo il modello SpaCy (es. per l'italiano)
-RUN python -m spacy download it_core_news_sm
+#RUN python -m spacy download it_core_news_sm
 
 # Copiamo il resto del tuo progetto
 COPY . .

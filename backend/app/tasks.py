@@ -5,9 +5,9 @@ from pypdf import PdfReader
 import re
 import string
 import unicodedata
-import spacy 
+#import spacy 
 
-nlp = spacy.load("it_core_news_sm")  # Scegli il modello giusto per la tua lingua
+#nlp = spacy.load("it_core_news_sm")  # Scegli il modello giusto per la tua lingua
 
 @shared_task
 def process_pdf_task(pdf_path):
@@ -29,7 +29,7 @@ def process_pdf_task(pdf_path):
         full_text_cleaned = basic_cleaning(full_text)
         full_text_further_processed = smart_line_joining(full_text_cleaned)
                 # 3) Applica la pipeline spaCy
-        doc = nlp(full_text_further_processed)
+        #doc = nlp(full_text_further_processed)
 
         # Ad esempio, suddividi in frasi
         sentences = list(doc.sents)

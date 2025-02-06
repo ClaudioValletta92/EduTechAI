@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
+from django.conf import settings
 
 class CustomUser(AbstractUser):
     age = models.PositiveIntegerField(
@@ -82,3 +83,31 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.title
+    
+    
+class UserActivity(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='activities'
+    )
+    project = models.ForeignKey(
+        'Project',  # Adjust the import if necessary
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    lesson = models.ForeignKey(
+        'Lesson',  # Adjust the import if necessary
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    opened_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        if self.lesson:
+            return f"{self.user.username} opened lesson {self.lesson.title} at {self.opened_at}"
+        elif self.project:
+            return f"{self.user.username} opened project {self.project.title} at {self.opened_at}"
+        return f"{self.user.username} activity at {self.opened_at}"

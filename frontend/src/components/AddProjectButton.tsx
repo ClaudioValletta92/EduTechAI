@@ -1,17 +1,12 @@
-// src/components/AddProjectButton.tsx
+// src/components/AddProjectButton.jsx
 import React, { useState } from "react";
 import Modal from "./Modal";
 
-interface Project {
-  title: string;
-  description: string;
-}
-
-const AddProjectButton: React.FC = () => {
+function AddProjectButton({ onProjectCreated }) {
   // State to control the display of the modal
-  const [showForm, setShowForm] = useState<boolean>(false);
+  const [showForm, setShowForm] = useState(false);
   // State for the new project data
-  const [project, setProject] = useState<Project>({
+  const [project, setProject] = useState({
     title: "",
     description: "",
   });
@@ -20,10 +15,10 @@ const AddProjectButton: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/projects/", {
+      const response = await fetch("http://localhost:8000/api/projects/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,7 +29,10 @@ const AddProjectButton: React.FC = () => {
         alert("Project created successfully!");
         setProject({ title: "", description: "" });
         setShowForm(false);
-        // Optionally refresh project list here.
+        // Call the callback to refresh the projects list
+        if (onProjectCreated) {
+          onProjectCreated();
+        }
       } else {
         const errorData = await response.json();
         alert("Error creating project: " + errorData.message);
@@ -45,9 +43,7 @@ const AddProjectButton: React.FC = () => {
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setProject((prev) => ({ ...prev, [name]: value }));
   };
@@ -73,7 +69,7 @@ const AddProjectButton: React.FC = () => {
             />
           </div>
           <div style={{ marginBottom: "1rem" }}>
-            <label htmlFor="description">Descriptionss:</label>
+            <label htmlFor="description">Description:</label>
             <br />
             <textarea
               id="description"
@@ -96,6 +92,6 @@ const AddProjectButton: React.FC = () => {
       </Modal>
     </div>
   );
-};
+}
 
 export default AddProjectButton;

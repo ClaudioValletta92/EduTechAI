@@ -1,11 +1,13 @@
-// src/App.tsx
-import React from "react";
+import React, { useState } from "react";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import UploadSection from "./components/UploadSection";
-// Optional: If you want nested routes, import { Outlet } from "react-router-dom";
+import ProjectsList from "./components/ProjectList";
+import ProjectDetail from "./pages/ProjectDetail";
 
 function App() {
+  const [selectedProject, setSelectedProject] = useState(null);
+
   const containerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -30,11 +32,19 @@ function App() {
       <div style={contentStyle}>
         <Sidebar />
 
-        {/* The main area where we can show content */}
+        {/* Conditionally render ProjectList or ProjectDetail */}
         <main style={mainStyle}>
           <h1>Welcome to EdutechAI!</h1>
-          <p>This is your main content areas.</p>
-          <UploadSection />
+          <p>This is your main content area.</p>
+
+          {selectedProject ? (
+            <ProjectDetail
+              project={selectedProject}
+              onBack={() => setSelectedProject(null)}
+            />
+          ) : (
+            <ProjectsList onSelectProject={setSelectedProject} />
+          )}
         </main>
       </div>
     </div>

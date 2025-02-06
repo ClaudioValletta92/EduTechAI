@@ -31,6 +31,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 AUTH_USER_MODEL = 'app.CustomUser'
+# settings.py
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    # Add any other origins you trust, such as your production domain
+]
 
 
 # Application definition

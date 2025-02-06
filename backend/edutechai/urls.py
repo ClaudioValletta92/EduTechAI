@@ -1,4 +1,4 @@
-from app.views import PDFUploadView,ProjectListCreateView
+from app.views import PDFUploadView,project_list_create_view
 
 """
 URL configuration for edutechai project.
@@ -22,5 +22,5 @@ from django.urls import path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/upload-pdf/', PDFUploadView.as_view(), name='upload-pdf'),
-    path('api/projects/', ProjectListCreateView.as_view(), name='project-list-create'),
+    path('api/projects/', project_list_create_view, name='project-list-create'),
 ]

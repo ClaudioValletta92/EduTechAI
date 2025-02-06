@@ -5,7 +5,7 @@ import App from "./App"; // The main layout (Header, Sidebar, etc.)
 import UploadPage from "./pages/UploadPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
-
+import ProjectDetail from "./pages/ProjectDetail";
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -18,6 +18,7 @@ function AppRouter() {
         {/* For a dedicated page */}
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/project/:projectId" element={<ProjectDetail />} />
 
         {/* Catch-all route */}
         <Route path="*" element={<NotFoundPage />} />

@@ -30,17 +30,14 @@ function Sidebar() {
           <Link to="/profile">Profile</Link>
         </li>
       </ul>
-
       <hr />
-
       {/* Reusable AddProjectButton component */}
-      <AddProjectButton />
-
-      <hr />
-
-      {/* Existing sidebar buttons */}
       <button style={{ display: "block", marginTop: "1rem" }}>Settings</button>
       <button style={{ display: "block", marginTop: "0.5rem" }}>Help</button>
+      <hr />
+      Your last opened things
+      {/* AddProjectButton component */}
+      {/* Existing sidebar buttons */}
     </aside>
   );
 }
