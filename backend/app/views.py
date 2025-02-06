@@ -8,7 +8,7 @@ from rest_framework import status, generics  # type: ignore
 from django.conf import settings
 from celery.result import AsyncResult
 from rest_framework.generics import RetrieveAPIView  # type: ignore
-from .models import Project
+from .models import Project, Lesson
 from .serializers import ProjectSerializer
 from django.views import View
 from django.core.serializers import serialize
@@ -17,6 +17,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view  # type: ignore
 from django.contrib.auth import get_user_model
+from .serializers import LessonSerializer
 
 from .tasks import process_pdf_task
 import logging
@@ -82,3 +83,22 @@ def project_list_create_view(request):
             return JsonResponse(json.loads(data)[0], status=201)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+def lesson_list_by_project(request, project_id):
+    """Retrieve all lessons for a given project."""
+
+    # Check if the project exists
+    try:
+        project = Project.objects.get(id=project_id)
+    except Project.DoesNotExist:
+        return Response(
+            {"error": "Project not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Get lessons related to the project
+    lessons = Lesson.objects.filter(project=project)
+    serializer = LessonSerializer(lessons, many=True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
