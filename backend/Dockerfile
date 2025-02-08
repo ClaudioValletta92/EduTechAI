@@ -18,7 +18,7 @@ RUN pip install -r requirements.txt
 
 
 # Scarichiamo il modello SpaCy (es. per l'italiano)
-#RUN python -m spacy download it_core_news_sm
+RUN python -m spacy download it_core_news_sm
 
 # Copiamo il resto del tuo progetto
 COPY . .

@@ -107,3 +107,16 @@ class UserActivity(models.Model):
         elif self.project:
             return f"{self.user.username} opened project {self.project.title} at {self.opened_at}"
         return f"{self.user.username} activity at {self.opened_at}"
+
+
+class LessonResource(models.Model):
+    lesson = models.ForeignKey(
+        Lesson, on_delete=models.CASCADE, related_name="resources"
+    )
+    title = models.CharField(max_length=255)
+    file = models.FileField(upload_to="lesson_pdfs/")
+    entry_text = models.TextField(blank=True)
+    entities = models.JSONField(default=list)
+    locations = models.JSONField(default=list)
+    topics = models.JSONField(default=list)  # Store extracted topics
+    uploaded_at = models.DateTimeField(auto_now_add=True)

@@ -8,7 +8,7 @@ from rest_framework import status, generics  # type: ignore
 from django.conf import settings
 from celery.result import AsyncResult
 from rest_framework.generics import RetrieveAPIView  # type: ignore
-from .models import Project, Lesson
+from .models import Project, Lesson, LessonResource
 from .serializers import ProjectSerializer
 from django.views import View
 from django.core.serializers import serialize
@@ -18,7 +18,15 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view  # type: ignore
 from django.contrib.auth import get_user_model
 from .serializers import LessonSerializer
-
+from django.shortcuts import get_object_or_404
+from .utils import (
+    extract_text_from_pdf,
+    basic_cleaning,
+    smart_line_joining,
+    extract_persons,
+    extract_locations,
+    extract_topics_lda,
+)
 from .tasks import process_pdf_task
 import logging
 
@@ -26,40 +34,50 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-class PDFUploadView(APIView):
-    def post(self, request):
-        logger.debug("Entered PDFUploadView.post() method")
-        pdf_file = request.FILES.get("pdf")
-        logger.debug(f"pdf_file: {pdf_file}")
+@csrf_exempt
+def upload_pdf(request, lesson_id):
+    """Handles PDF uploads, extracts text, entities, and topics."""
+    if request.method == "POST":
+        lesson = Lesson.objects.get(pk=lesson_id)
+        title = request.POST.get("title")
+        file = request.FILES.get("file")
 
-        if not pdf_file:
-            return Response(
-                {"error": "No PDF uploaded"}, status=status.HTTP_400_BAD_REQUEST
-            )
-        # 1) Save the uploaded PDF to MEDIA_ROOT
-        save_path = os.path.join(settings.MEDIA_ROOT, pdf_file.name)
-        with open(save_path, "wb+") as destination:
-            for chunk in pdf_file.chunks():
-                destination.write(chunk)
+        if not file or not title:
+            return JsonResponse({"error": "Title and file are required"}, status=400)
 
-        # 2) Queue the Celery task
-        task = process_pdf_task.delay(save_path)
+        resource = LessonResource.objects.create(lesson=lesson, title=title, file=file)
 
-        # 3) Return the Celery task ID so the frontend can track progress
-        return Response({"task_id": task.id}, status=status.HTTP_200_OK)
+        # Extract text and process it
+        raw_text = extract_text_from_pdf(resource.file.path)
+        cleaned_text = basic_cleaning(raw_text)
+        formatted_text = smart_line_joining(cleaned_text)
 
+        # Extract entities
+        persons = extract_persons(formatted_text)
+        locations = extract_locations(formatted_text)
 
-class TaskStatusView(RetrieveAPIView):
-    def get(self, request, task_id):
-        async_result = AsyncResult(task_id)
-        if async_result.state == "PENDING":
-            return Response({"status": "PENDING"})
-        elif async_result.state == "SUCCESS":
-            return Response({"status": "SUCCESS", "result": async_result.result})
-        elif async_result.state == "FAILURE":
-            return Response(
-                {"status": "FAILURE", "error": str(async_result.result)}
-            )  # ...
+        # Extract topics
+        topics = extract_topics_lda(formatted_text)
+
+        # Store extracted data in the database
+        resource.entry_text = formatted_text
+        resource.entities = persons
+        resource.locations = locations
+        resource.save()
+
+        return JsonResponse(
+            {
+                "id": resource.id,
+                "title": resource.title,
+                "entry_text": resource.entry_text,
+                "persons": resource.entities,
+                "locations": resource.locations,
+                "topics": topics,
+            },
+            status=201,
+        )
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
 @csrf_exempt
@@ -87,18 +105,36 @@ def project_list_create_view(request):
 
 @csrf_exempt
 def lesson_list_by_project(request, project_id):
-    """Retrieve all lessons for a given project."""
+    """Handle retrieving and adding lessons for a given project."""
 
     # Check if the project exists
-    try:
-        project = Project.objects.get(id=project_id)
-    except Project.DoesNotExist:
-        return Response(
-            {"error": "Project not found"}, status=status.HTTP_404_NOT_FOUND
-        )
+    project = get_object_or_404(Project, id=project_id)
 
-    # Get lessons related to the project
-    lessons = Lesson.objects.filter(project=project)
-    serializer = LessonSerializer(lessons, many=True)
+    if request.method == "GET":
+        # Get all lessons related to the project
+        lessons = Lesson.objects.filter(project=project)
+        data = serialize("json", lessons)
+        return JsonResponse(json.loads(data), safe=False)
 
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            title = data.get("title")
+
+            if not title:
+                return JsonResponse({"error": "Title is required"}, status=400)
+
+            # Create new lesson
+            lesson = Lesson.objects.create(title=title, project=project)
+
+            # Serialize newly created lesson
+            lesson_data = serialize("json", [lesson])
+            return JsonResponse(json.loads(lesson_data)[0], status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    else:
+        return JsonResponse({"error": "Method not allowed"}, status=405)

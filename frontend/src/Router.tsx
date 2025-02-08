@@ -6,6 +6,7 @@ import UploadPage from "./pages/UploadPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProjectDetail from "./pages/ProjectDetail";
+import LessonDetail from "./pages/LessonDetail";
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -19,6 +20,7 @@ function AppRouter() {
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/project/:projectId" element={<ProjectDetail />} />
+        <Route path="/lessons/:lessonId" element={<LessonDetail />} />
 
         {/* Catch-all route */}
         <Route path="*" element={<NotFoundPage />} />

@@ -34,9 +34,6 @@ function App() {
 
         {/* Conditionally render ProjectList or ProjectDetail */}
         <main style={mainStyle}>
-          <h1>Welcome to EdutechAI!</h1>
-          <p>This is your main content area.</p>
-
           {selectedProject ? (
             <ProjectDetail
               project={selectedProject}
