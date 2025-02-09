@@ -114,7 +114,7 @@ class LessonResource(models.Model):
         Lesson, on_delete=models.CASCADE, related_name="resources"
     )
     title = models.CharField(max_length=255)
-    file = models.FileField(upload_to="lesson_pdfs/")
+    file = models.FileField(upload_to="")
     entry_text = models.TextField(blank=True)
     entities = models.JSONField(default=list)
     locations = models.JSONField(default=list)

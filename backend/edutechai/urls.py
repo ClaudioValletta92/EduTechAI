@@ -1,4 +1,6 @@
-from app.views import PDFUploadView, project_list_create_view, lesson_list_by_project
+from app.views import project_list_create_view, lesson_list_by_project, upload_pdf
+from django.contrib import admin
+from django.urls import path
 
 """
 URL configuration for edutechai project.
@@ -16,16 +18,15 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/upload-pdf/", PDFUploadView.as_view(), name="upload-pdf"),
     path("api/projects/", project_list_create_view, name="project-list-create"),
     path(
         "api/projects/<int:project_id>/lessons/",
         lesson_list_by_project,
         name="lesson-list-by-project",
     ),
+    path("api/lessons/<int:lesson_id>/upload-pdf/", upload_pdf, name="upload-pdf"),
 ]

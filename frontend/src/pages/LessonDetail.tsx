@@ -2,51 +2,23 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
+import UploadSection from "../components/UploadSection"; // Import UploadSection
 
 function LessonDetail() {
-  const { lessonId } = useParams();
-
-  // Styles
-  const containerStyle = {
-    display: "flex",
-    flexDirection: "column",
-    height: "100vh",
-  };
-
-  const contentStyle = {
-    display: "flex",
-    flex: 1,
-  };
-
-  const mainStyle = {
-    flex: 1,
-    padding: "1rem",
-    background: "#fff",
-  };
+  const { lessonId } = useParams<{ lessonId: string }>();
 
   return (
-    <div style={containerStyle}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <Header />
 
-      <div style={contentStyle}>
+      <div style={{ display: "flex", flex: 1 }}>
         <Sidebar />
 
-        {/* Main content */}
-        <main style={mainStyle}>
+        <main style={{ flex: 1, padding: "1rem", background: "#fff" }}>
           <h2>Lesson {lessonId}</h2>
-          <button
-            style={{
-              background: "#007bff",
-              color: "#fff",
-              border: "none",
-              padding: "10px 15px",
-              cursor: "pointer",
-              borderRadius: "5px",
-              fontSize: "1rem",
-            }}
-          >
-            ➕ Add Resource
-          </button>
+
+          {/* UploadSection as a button that opens the modal */}
+          <UploadSection lessonId={parseInt(lessonId)} />
         </main>
       </div>
     </div>

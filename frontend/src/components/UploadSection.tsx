@@ -1,23 +1,25 @@
 import React, { useRef, useState } from "react";
+import Modal from "./Modal";
 
-function UploadSection() {
+interface UploadSectionProps {
+  lessonId: number;
+}
+
+function UploadSection({ lessonId }: UploadSectionProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // State to store the selected PDF file
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  // State to track upload status
-  // Could be "idle", "ready-to-confirm", "uploading", "success", "error"
+  const [title, setTitle] = useState<string>("");
   const [uploadStatus, setUploadStatus] = useState<
     "idle" | "ready" | "uploading" | "success" | "error"
   >("idle");
 
-  // 1) Let the hidden file input open when user clicks "Upload PDF"
+  // Open file picker
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-  // 2) Store the selected file in state
+  // Store selected file
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -26,19 +28,22 @@ function UploadSection() {
       return;
     }
     setSelectedFile(file);
-    // Move to a "ready" state indicating we have a file but haven't confirmed
     setUploadStatus("ready");
   };
 
-  // 3) Confirm the upload → Actually send file to the API
+  // Confirm and upload
   const handleConfirmUpload = () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !title) {
+      alert("Please enter a title and select a PDF file.");
+      return;
+    }
+
     setUploadStatus("uploading");
-
     const formData = new FormData();
-    formData.append("pdf", selectedFile);
+    formData.append("title", title);
+    formData.append("file", selectedFile);
 
-    fetch("http://localhost:8000/api/upload-pdf/", {
+    fetch(`http://localhost:8000/api/lessons/${lessonId}/upload-pdf/`, {
       method: "POST",
       body: formData,
     })
@@ -59,37 +64,88 @@ function UploadSection() {
   };
 
   return (
-    <div style={{ marginTop: "1rem" }}>
-      {/* Hidden file input that only accepts PDF */}
-      <input
-        type="file"
-        accept="application/pdf"
-        style={{ display: "none" }}
-        ref={fileInputRef}
-        onChange={handleFileChange}
-      />
+    <div>
+      {/* Button to open modal */}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        style={{
+          background: "#007bff",
+          color: "#fff",
+          border: "none",
+          padding: "10px 15px",
+          cursor: "pointer",
+          borderRadius: "5px",
+          fontSize: "1rem",
+        }}
+      >
+        ➕ Add Resource
+      </button>
 
-      {/* Button that triggers file input click */}
-      <button onClick={handleUploadClick}>Select PDF</button>
+      {/* Modal for Upload Form */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <h3>Upload a PDF Resource</h3>
 
-      {/* If a file is selected, show its name + "Confirm Upload" button */}
-      {uploadStatus === "ready" && selectedFile && (
-        <div style={{ marginTop: "1rem" }}>
-          <p>Selected file: {selectedFile.name}</p>
-          <button onClick={handleConfirmUpload}>Confirm Upload</button>
-        </div>
-      )}
+        {/* Title Input */}
+        <input
+          type="text"
+          placeholder="Enter resource title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          style={{
+            padding: "8px",
+            marginBottom: "10px",
+            display: "block",
+            width: "100%",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+          }}
+        />
 
-      {/* Show status messages / success check */}
-      {uploadStatus === "uploading" && <p>Uploading…</p>}
-      {uploadStatus === "success" && (
-        <p style={{ color: "green" }}>
-          Upload successful <span style={{ fontSize: "1.5rem" }}>✓</span>
-        </p>
-      )}
-      {uploadStatus === "error" && (
-        <p style={{ color: "red" }}>Error uploading PDF. Please try again.</p>
-      )}
+        {/* Hidden File Input */}
+        <input
+          type="file"
+          accept="application/pdf"
+          style={{ display: "none" }}
+          ref={fileInputRef}
+          onChange={handleFileChange}
+        />
+
+        {/* Buttons */}
+        <button
+          onClick={handleUploadClick}
+          style={{
+            marginRight: "10px",
+            padding: "8px",
+            cursor: "pointer",
+          }}
+        >
+          Select PDF
+        </button>
+
+        {uploadStatus === "ready" && selectedFile && (
+          <div style={{ marginTop: "1rem" }}>
+            <p>Selected file: {selectedFile.name}</p>
+            <button
+              onClick={handleConfirmUpload}
+              style={{
+                padding: "8px",
+                cursor: "pointer",
+              }}
+            >
+              Confirm Upload
+            </button>
+          </div>
+        )}
+
+        {/* Status Messages */}
+        {uploadStatus === "uploading" && <p>Uploading…</p>}
+        {uploadStatus === "success" && (
+          <p style={{ color: "green" }}>Upload successful ✅</p>
+        )}
+        {uploadStatus === "error" && (
+          <p style={{ color: "red" }}>Error uploading PDF. Please try again.</p>
+        )}
+      </Modal>
     </div>
   );
 }

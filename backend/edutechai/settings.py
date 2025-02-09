@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+from decouple import config
 
 """
 Django settings for edutechai project.
@@ -12,13 +14,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-from pathlib import Path
-import os
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+# Load MEDIA_ROOT from .env
+MEDIA_ROOT = config("MEDIA_ROOT", default=os.path.join(BASE_DIR, "media"))
+MEDIA_URL = "/media/"  # URL prefix for serving files
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -30,7 +31,7 @@ SECRET_KEY = "django-insecure-i##!x!4__2bh@sbu1!olg09!g4q-e!!fn&g)!4l2!@099(dn7f
 DEBUG = True
 
 ALLOWED_HOSTS = []
-AUTH_USER_MODEL = 'app.CustomUser'
+AUTH_USER_MODEL = "app.CustomUser"
 # settings.py
 
 CSRF_TRUSTED_ORIGINS = [
@@ -135,7 +136,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Add this line
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")  # Add this line
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

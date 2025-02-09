@@ -25,3 +25,5 @@ blis
 thinc
 gensim
 nltk
+PyPDF2
+python-decouple
