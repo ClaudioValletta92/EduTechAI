@@ -1,5 +1,6 @@
 from django.shortcuts import render
-
+from django.db import transaction
+import uuid
 # app/views.py
 import os
 from rest_framework.views import APIView  # type: ignore
@@ -29,14 +30,18 @@ from .utils import (
 )
 from .tasks import process_pdf_task
 import logging
-
+from django.db import transaction
+from django.http import JsonResponse
+from .models import Lesson
+from .tasks import process_pdf_task
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
+MEDIA_DIR = "/app/media/uploads"  # ✅ Shared directory inside the container
 
 @csrf_exempt
 def upload_pdf(request, lesson_id):
-    """Handles PDF uploads, extracts text, entities, and topics."""
+    """Handles PDF uploads and triggers async processing in Celery."""
     if request.method == "POST":
         lesson = Lesson.objects.get(pk=lesson_id)
         title = request.POST.get("title")
@@ -45,37 +50,23 @@ def upload_pdf(request, lesson_id):
         if not file or not title:
             return JsonResponse({"error": "Title and file are required"}, status=400)
 
-        resource = LessonResource.objects.create(lesson=lesson, title=title, file=file)
+       # Ensure the directory exists
+        os.makedirs(MEDIA_DIR, exist_ok=True)
 
-        # Extract text and process it
-        raw_text = extract_text_from_pdf(resource.file.path)
-        cleaned_text = basic_cleaning(raw_text)
-        formatted_text = smart_line_joining(cleaned_text)
+        # Save file in the shared media directory
+        unique_filename = f"{uuid.uuid4().hex}_{file.name}"
+        file_path = os.path.join(MEDIA_DIR, unique_filename)
 
-        # Extract entities
-        persons = extract_persons(formatted_text)
-        locations = extract_locations(formatted_text)
+        # Save the file
+        with open(file_path, "wb") as f:
+            for chunk in file.chunks():
+                f.write(chunk)
 
-        # Extract topics
-        topics = extract_topics_lda(formatted_text)
+        # Trigger Celery task
+        process_pdf_task.delay(lesson.id, title, file_path)
 
-        # Store extracted data in the database
-        resource.entry_text = formatted_text
-        resource.entities = persons
-        resource.locations = locations
-        resource.save()
 
-        return JsonResponse(
-            {
-                "id": resource.id,
-                "title": resource.title,
-                "entry_text": resource.entry_text,
-                "persons": resource.entities,
-                "locations": resource.locations,
-                "topics": topics,
-            },
-            status=201,
-        )
+        return JsonResponse({"message": "Processing started"}, status=202)
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
