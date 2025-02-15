@@ -1,4 +1,4 @@
-from app.views import project_list_create_view, lesson_list_by_project, upload_pdf
+from app.views import project_list_create_view, lesson_list_by_project, upload_pdf,lesson_resource_list
 from django.contrib import admin
 from django.urls import path
 
@@ -29,4 +29,9 @@ urlpatterns = [
         name="lesson-list-by-project",
     ),
     path("api/lessons/<int:lesson_id>/upload-pdf/", upload_pdf, name="upload-pdf"),
+    path(
+        "api/lessons/<int:lesson_id>/resources/",
+        lesson_resource_list,
+        name="lesson-resource-list",
+    ),
 ]

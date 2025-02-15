@@ -1,39 +1,29 @@
-from django.shortcuts import render
-from django.db import transaction
-import uuid
-# app/views.py
 import os
-from rest_framework.views import APIView  # type: ignore
-from rest_framework.response import Response  # type: ignore
-from rest_framework import status, generics  # type: ignore
-from django.conf import settings
-from celery.result import AsyncResult
-from rest_framework.generics import RetrieveAPIView  # type: ignore
-from .models import Project, Lesson, LessonResource
-from .serializers import ProjectSerializer
-from django.views import View
-from django.core.serializers import serialize
-from django.http import JsonResponse
+import uuid
 import json
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view  # type: ignore
-from django.contrib.auth import get_user_model
-from .serializers import LessonSerializer
-from django.shortcuts import get_object_or_404
-from .utils import (
-    extract_text_from_pdf,
-    basic_cleaning,
-    smart_line_joining,
-    extract_persons,
-    extract_locations,
-    extract_topics_lda,
-)
-from .tasks import process_pdf_task
 import logging
+
+from django.conf import settings
+from django.core.serializers import serialize
 from django.db import transaction
 from django.http import JsonResponse
-from .models import Lesson
+from django.shortcuts import get_object_or_404, render
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import get_user_model
+
+from rest_framework import generics, status
+from rest_framework.decorators import api_view
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from celery.result import AsyncResult
+
+from .models import Project, Lesson, LessonResource
+from .serializers import ProjectSerializer, LessonSerializer
 from .tasks import process_pdf_task
+
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
@@ -129,3 +119,28 @@ def lesson_list_by_project(request, project_id):
 
     else:
         return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+def lesson_resource_list(request, lesson_id):
+    """
+    Retrieve all resources that belong to a specific lesson.
+    """
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+    resources = lesson.resources.all()  # Using the related_name "resources"
+    
+    resource_data = [
+        {
+            "id": resource.id,
+            "title": resource.title,
+            "file_url": resource.file.url if resource.file else None,
+            "entry_text": resource.entry_text,
+            "entities": resource.entities,
+            "locations": resource.locations,
+            "topics": resource.topics,
+            "uploaded_at": resource.uploaded_at.isoformat(),
+        }
+        for resource in resources
+    ]
+    
+    return JsonResponse({"resources": resource_data})

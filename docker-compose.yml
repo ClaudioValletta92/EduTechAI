@@ -5,10 +5,11 @@ services:
     build: ./backend
     volumes:
       - ./backend:/usr/src/app
-      - ./backend/staticfiles:/usr/src/app/staticfiles # Add this line
+      - ./backend/staticfiles:/usr/src/app/staticfiles
+      - ./media:/app/media
     ports:
       - "8000:8000"
-    env_file:
+    env_file:  # ✅ Ensure Django reads environment variables from .env
       - .env
     depends_on:
       - redis
@@ -23,7 +24,7 @@ services:
     build: ./frontend
     volumes:
       - ./frontend:/usr/src/app
-      - /usr/src/app/node_modules # Prevents issues with host & container dependencies
+      - /usr/src/app/node_modules
     ports:
       - "3000:3000"
     depends_on:
@@ -38,6 +39,10 @@ services:
 
   celery_worker:
     build: ./backend
+    volumes:
+      - ./media:/app/media
+    env_file:  # ✅ Add this to ensure Celery uses the same DB as Django
+      - .env
     command: >
       sh -c "sleep 10 && celery -A edutechai worker --loglevel=info"
     depends_on:
@@ -46,6 +51,8 @@ services:
 
   celery_beat:
     build: ./backend
+    env_file:  # ✅ Add this to ensure Celery uses the same DB as Django
+      - .env
     command: >
       sh -c "sleep 15 && celery -A edutechai beat --loglevel=info"
     depends_on:

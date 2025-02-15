@@ -92,12 +92,11 @@ WSGI_APPLICATION = "edutechai.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+import os
+import dj_database_url  # Ensure you have this package installed
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.config(default=os.getenv("DATABASE_URL"))
 }
 
 
@@ -158,26 +157,19 @@ CACHES = {
     }
 }
 
-
-# edutechai/settings.py
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {name} {message}",
-            "style": "{",
-        },
-    },
     "handlers": {
         "console": {
+            "level": "DEBUG",
             "class": "logging.StreamHandler",
-            "formatter": "verbose",
         },
     },
-    "root": {
-        "handlers": ["console"],
-        "level": "DEBUG",  # or INFO, WARNING, etc.
+    "loggers": {
+        "django.db.backends": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+        },
     },
 }

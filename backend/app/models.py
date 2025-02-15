@@ -108,8 +108,15 @@ class UserActivity(models.Model):
             return f"{self.user.username} opened project {self.project.title} at {self.opened_at}"
         return f"{self.user.username} activity at {self.opened_at}"
 
-
 class LessonResource(models.Model):
+    class ResourceType(models.TextChoices):
+        PDF = "pdf", "PDF"
+        AUDIO = "audio", "Audio"
+        TEXT = "text", "Text"
+        IMAGE = "image", "Image"
+        VIDEO = "video", "Video"
+        OTHER = "other", "Other"
+
     lesson = models.ForeignKey(
         Lesson, on_delete=models.CASCADE, related_name="resources"
     )
@@ -120,3 +127,11 @@ class LessonResource(models.Model):
     locations = models.JSONField(default=list)
     topics = models.JSONField(default=list)  # Store extracted topics
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    resource_type = models.CharField(
+        max_length=10,
+        choices=ResourceType.choices,
+        default=ResourceType.OTHER
+    )
+
+    class Meta:
+        db_table = "app_lessonresource"  # Keep custom table name
