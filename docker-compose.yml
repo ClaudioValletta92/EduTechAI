@@ -1,6 +1,18 @@
 version: "3.8"
 
 services:
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_DB: edutechai
+      POSTGRES_USER: youruser
+      POSTGRES_PASSWORD: yourpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   backend:
     build: ./backend
     volumes:
@@ -9,9 +21,10 @@ services:
       - ./media:/app/media
     ports:
       - "8000:8000"
-    env_file:  # ✅ Ensure Django reads environment variables from .env
+    env_file:
       - .env
     depends_on:
+      - db
       - redis
     command: >
       sh -c "python manage.py wait_for_db &&
@@ -41,17 +54,18 @@ services:
     build: ./backend
     volumes:
       - ./media:/app/media
-    env_file:  # ✅ Add this to ensure Celery uses the same DB as Django
+    env_file:
       - .env
     command: >
       sh -c "sleep 10 && celery -A edutechai worker --loglevel=info"
     depends_on:
       - redis
       - backend
+      - db
 
   celery_beat:
     build: ./backend
-    env_file:  # ✅ Add this to ensure Celery uses the same DB as Django
+    env_file:
       - .env
     command: >
       sh -c "sleep 15 && celery -A edutechai beat --loglevel=info"
@@ -59,3 +73,7 @@ services:
       - redis
       - backend
       - celery_worker
+      - db
+
+volumes:
+  postgres_data:
