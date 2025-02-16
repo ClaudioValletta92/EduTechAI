@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.conf import settings
 
-
 class CustomUser(AbstractUser):
     age = models.PositiveIntegerField(
         null=True, blank=True, help_text="Età dell'utente"
@@ -123,9 +122,7 @@ class LessonResource(models.Model):
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to="")
     entry_text = models.TextField(blank=True)
-    entities = models.JSONField(default=list)
-    locations = models.JSONField(default=list)
-    topics = models.JSONField(default=list)  # Store extracted topics
+    subject = models.TextField(blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     resource_type = models.CharField(
         max_length=10,
@@ -135,3 +132,24 @@ class LessonResource(models.Model):
 
     class Meta:
         db_table = "app_lessonresource"  # Keep custom table name
+
+
+class MonthlyAPIUsage(models.Model):
+    SERVICE_CHOICES = [
+        ("gemini", "Google Gemini"),
+        ("azure_tts", "Azure Text-to-Speech"),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    service = models.CharField(max_length=20, choices=SERVICE_CHOICES)  # API used
+    month = models.IntegerField()  # e.g., 1 = January, 2 = February
+    year = models.IntegerField()  # e.g., 2025
+    total_input_tokens = models.IntegerField(default=0)  # For Gemini
+    total_output_tokens = models.IntegerField(default=0)  # For Gemini
+    total_characters_processed = models.IntegerField(default=0)  # For Azure TTS
+
+    class Meta:
+        unique_together = ("user", "service", "month", "year")  # Avoid duplicate entries
+
+    def __str__(self):
+        return f"{self.user.username} - {self.service} - {self.month}/{self.year}"

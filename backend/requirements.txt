@@ -29,3 +29,4 @@ PyPDF2
 python-decouple
 psycopg2-binary
 dj-database-url
+google-generativeai
