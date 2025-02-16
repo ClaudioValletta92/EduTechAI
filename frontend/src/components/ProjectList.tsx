@@ -1,4 +1,3 @@
-// src/components/ProjectsList.jsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { truncateText } from "./HelperFunction";
@@ -7,17 +6,24 @@ import AddProjectButton from "./AddProjectButton";
 function ProjectsList({ onSelectProject }) {
   const [projects, setProjects] = useState([]);
 
-  useEffect(() => {
+  // ✅ Define fetchProjects so it can be called inside the component
+  const fetchProjects = () => {
     fetch("http://localhost:8000/api/projects/")
       .then((res) => res.json())
       .then((data) => setProjects(data))
       .catch((error) => console.error("Error fetching projects:", error));
+  };
+
+  // Load projects initially
+  useEffect(() => {
+    fetchProjects();
   }, []);
 
   return (
     <div>
       <h2 style={{ textAlign: "center", marginTop: "20px" }}>Your Projects</h2>
-      <AddProjectButton onProjectCreated={() => fetchProjects()} />
+      {/* ✅ Pass fetchProjects to AddProjectButton so it can refresh the list */}
+      <AddProjectButton onProjectCreated={fetchProjects} />
       <div
         style={{
           display: "grid",
