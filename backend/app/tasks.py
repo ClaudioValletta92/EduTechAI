@@ -2,7 +2,7 @@ import logging
 from celery import shared_task
 from .models import LessonResource,Lesson,MonthlyAPIUsage
 from .utils import extract_text_from_pdf, basic_cleaning, smart_line_joining, extract_persons_by_frequency, extract_locations,extract_topics_lda
-from aifunctions import generate_response_from_google
+from .aifunctions import generate_response_from_google
 from django.db import transaction
 from django.utils.timezone import now
 from django.db.models import F
@@ -28,8 +28,16 @@ def process_pdf_task(self, lesson_id, title, file_path):
             extracted_persons = extract_persons_by_frequency(full_text_further_processed)[:5]
             extracted_locations = extract_locations(full_text_further_processed)[:5]
             extracted_topics = extract_topics_lda(full_text_further_processed)
-
-            # 🔥 Call Google Gemini API
+            prompt = (
+                "Classifica l'argomento principale del testo tra le seguenti opzioni: "
+                "Storia, Scienza, Matematica, Filosofia, Letteratura, Geografia, Arte, Economia, Informatica, Altro.\n\n"
+                "Ecco le informazioni chiave estratte:\n"
+                f"- **Persone citate**: {', '.join([p[0] for p in extracted_persons]) if extracted_persons else 'Nessuna'}\n"
+                f"- **Luoghi menzionati**: {', '.join([l[0] for l in extracted_locations]) if extracted_locations else 'Nessuno'}\n"
+                f"- **Temi principali**: {', '.join(extracted_topics) if extracted_topics else 'Non identificati'}\n\n"
+                "Rispondi solo con il nome della categoria in italiano, senza testo aggiuntivo."
+            )
+            #Call Google Gemini API
             response_data = generate_response_from_google(prompt)
             subject = response_data["text"].strip() if response_data["text"] else "Altro"
             input_tokens = response_data.get("input_tokens", 0)
@@ -69,9 +77,6 @@ def process_pdf_task(self, lesson_id, title, file_path):
                 title=title,
                 file=file_path,
                 entry_text=full_text_further_processed,
-                entities=extracted_persons,
-                locations=extracted_locations,
-                topics=extracted_topics,
                 subject=subject,
                 resource_type=LessonResource.ResourceType.PDF
             )

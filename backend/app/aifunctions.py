@@ -15,36 +15,39 @@ GENERATION_CONFIG = {
     "max_output_tokens": 8192,
     "response_mime_type": "text/plain",
 }
+
 def generate_response_from_google(prompt):
     """
     Calls Google Gemini API with the given prompt and returns the response text along with token usage.
     """
     try:
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash-8b",
+            model_name="models/gemini-1.5-flash",
             generation_config=GENERATION_CONFIG,
         )
 
-        chat_session = model.start_chat(history=[])
+        # ✅ First, count input tokens before making the request
+        token_info = model.count_tokens(prompt)
+        input_tokens = token_info.total_tokens if token_info else None
 
         # Send user input to the model
-        response = chat_session.send_message(prompt)
+        response = model.generate_content(prompt)
 
-        # Extract token usage (if available)
-        token_usage = response.usage if hasattr(response, "usage") else None
+        # ✅ Extract token usage properly from `usage_metadata`
+        usage_metadata = getattr(response, "usage_metadata", None)
+        
+        prompt_tokens = usage_metadata.prompt_token_count if usage_metadata else None
+        response_tokens = usage_metadata.candidates_token_count if usage_metadata else None
+        total_tokens = usage_metadata.total_token_count if usage_metadata else None
 
-        input_tokens = token_usage.input_tokens if token_usage else None
-        output_tokens = token_usage.output_tokens if token_usage else None
-
-        # Log token usage for tracking
-        logger.info(f"📊 Token Usage - Input: {input_tokens}, Output: {output_tokens}")
+        logger.info(f"Token Usage - Prompt: {prompt_tokens}, Response: {response_tokens}, Total: {total_tokens}")
 
         return {
-            "text": response.text,
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
+            "text": response.text if response.text else None,
+            "input_tokens": prompt_tokens,
+            "output_tokens": response_tokens,
         }
 
     except Exception as e:
         logger.error(f"Error calling Google Gemini API: {e}")
-        return {"text": None, "input_tokens": None, "output_tokens": None}
+        return {"text": None, "input_tokens": None, "output_tokens": None, "total_tokens": None}
