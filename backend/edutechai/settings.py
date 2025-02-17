@@ -14,7 +14,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # Load MEDIA_ROOT from .env
@@ -30,7 +29,6 @@ SECRET_KEY = "django-insecure-i##!x!4__2bh@sbu1!olg09!g4q-e!!fn&g)!4l2!@099(dn7f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
 AUTH_USER_MODEL = "app.CustomUser"
 # settings.py
 
@@ -56,6 +54,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -63,11 +62,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
 ]
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
+
+CORS_ALLOW_CREDENTIALS = True  # Allow authentication via cookies
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+CORS_ALLOW_HEADERS = ["*"]  # Allow all headers
 
 ROOT_URLCONF = "edutechai.urls"
 
@@ -173,3 +172,6 @@ LOGGING = {
         },
     },
 }
+
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all requests (TEMPORARY)
+ALLOWED_HOSTS = ["*"]  # Allow all hosts (temporary for debugging)

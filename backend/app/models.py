@@ -77,6 +77,7 @@ class Lesson(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    analyzed = models.BooleanField(default=False)  # NEW: Track if the lesson has been analyzed
 
     def __str__(self):
         return self.title
@@ -153,3 +154,18 @@ class MonthlyAPIUsage(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.service} - {self.month}/{self.year}"
+
+class ConceptMap(models.Model):
+    """Stores a conceptual map in JSON format for easy retrieval and modification."""
+    title = models.CharField(max_length=255)
+    user = models.ForeignKey("auth.User", on_delete=models.CASCADE)  # User who owns the map
+    data = models.JSONField()  # Stores React Flow JSON (nodes, edges)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    lesson = models.OneToOneField(  # Each lesson has ONE conceptual map
+        "Lesson", on_delete=models.CASCADE, related_name="concept_map"
+    )
+    def __str__(self):
+        return f"{self.title} (by {self.user.username})"
+    
+    from django.db import models

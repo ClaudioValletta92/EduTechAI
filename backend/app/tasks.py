@@ -1,13 +1,13 @@
 import logging
 from celery import shared_task
-from .models import LessonResource,Lesson,MonthlyAPIUsage
+from .models import LessonResource,Lesson,MonthlyAPIUsage,ConceptMap
 from .utils import extract_text_from_pdf, basic_cleaning, smart_line_joining, extract_persons_by_frequency, extract_locations,extract_topics_lda
 from .aifunctions import generate_response_from_google
 from django.db import transaction
 from django.utils.timezone import now
 from django.db.models import F
 from django.contrib.auth import get_user_model
-
+import time
 
 
 logger = logging.getLogger(__name__)
@@ -89,3 +89,33 @@ def process_pdf_task(self, lesson_id, title, file_path):
     except Exception as e:
         logger.exception(f"🔥 Unexpected error in process_pdf_task: {e}")
         return {"status": "error", "message": str(e)}
+
+@shared_task
+def analyze_lesson_resources(lesson_id):
+    """AI function to analyze lesson resources and generate a conceptual map."""
+    lesson = Lesson.objects.get(id=lesson_id)
+
+    # Simulated AI processing (Replace with actual AI function)
+    time.sleep(5)  
+
+    # Example AI-generated concept map (Replace with real AI output)
+    generated_map = {
+        "nodes": [
+            {"id": "1", "label": "Main Topic", "description": "Core idea", "x_position": 100, "y_position": 100},
+            {"id": "2", "label": "Subtopic A", "description": "Related concept", "x_position": 300, "y_position": 200}
+        ],
+        "edges": [
+            {"id": "e1-2", "source": "1", "target": "2"}
+        ]
+    }
+
+    # Save or update the conceptual map
+    concept_map, created = ConceptMap.objects.get_or_create(lesson=lesson)
+    concept_map.data = generated_map
+    concept_map.save()
+
+    # Mark lesson as analyzed
+    lesson.analyzed = True
+    lesson.save()
+
+    return f"Concept map for Lesson {lesson_id} updated!"

@@ -11,18 +11,20 @@ from django.shortcuts import get_object_or_404, render
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
+from django.views.decorators.http import require_GET
 
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 from celery.result import AsyncResult
 
-from .models import Project, Lesson, LessonResource
+from .models import Project, Lesson, LessonResource,ConceptMap
 from .serializers import ProjectSerializer, LessonSerializer
-from .tasks import process_pdf_task
+from .tasks import process_pdf_task,analyze_lesson_resources
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -34,6 +36,9 @@ def upload_pdf(request, lesson_id):
     """Handles PDF uploads and triggers async processing in Celery."""
     if request.method == "POST":
         lesson = Lesson.objects.get(pk=lesson_id)
+        if lesson.analyzed:
+            return Response({"error": "Cannot add resources to an analyzed lesson."}, status=400)
+
         title = request.POST.get("title")
         file = request.FILES.get("file")
 
@@ -120,27 +125,62 @@ def lesson_list_by_project(request, project_id):
     else:
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
-
 @csrf_exempt
+@require_GET
 def lesson_resource_list(request, lesson_id):
     """
-    Retrieve all resources that belong to a specific lesson.
+    Retrieve all resources for a specific lesson.
     """
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    resources = lesson.resources.all()  # Using the related_name "resources"
-    
+    resources = lesson.resources.all()
+
     resource_data = [
         {
             "id": resource.id,
             "title": resource.title,
             "file_url": resource.file.url if resource.file else None,
             "entry_text": resource.entry_text,
-            "entities": resource.entities,
-            "locations": resource.locations,
-            "topics": resource.topics,
             "uploaded_at": resource.uploaded_at.isoformat(),
         }
         for resource in resources
     ]
-    
-    return JsonResponse({"resources": resource_data})
+
+    # Create JSON response
+    response = JsonResponse({"resources": resource_data})
+
+    # Manually set CORS headers
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "*"
+
+    return response
+
+@csrf_exempt
+@api_view(["GET", "POST"])
+def lesson_concept_map(request, lesson_id):
+    """Retrieve or create/update a conceptual map for a lesson."""
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    if request.method == "GET":
+        concept_map, created = ConceptMap.objects.get_or_create(lesson=lesson, defaults={"data": {}})
+        return Response({"lesson": lesson.title, "data": concept_map.data})
+
+    if request.method == "POST":
+        data = request.data.get("data", {})
+        concept_map, created = ConceptMap.objects.get_or_create(lesson=lesson)
+        concept_map.data = data
+        concept_map.save()
+        return Response({"message": "Concept map saved"})
+
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def analyze_lesson(request, lesson_id):
+    """Trigger AI analysis for a lesson's resources."""
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    # Trigger Celery task
+    task = analyze_lesson_resources.delay(lesson.id)
+
+    return Response({"message": "Analysis started", "task_id": task.id})
