@@ -157,8 +157,8 @@ class MonthlyAPIUsage(models.Model):
 
 class ConceptMap(models.Model):
     """Stores a conceptual map in JSON format for easy retrieval and modification."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    user = models.ForeignKey("auth.User", on_delete=models.CASCADE)  # User who owns the map
     data = models.JSONField()  # Stores React Flow JSON (nodes, edges)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -168,4 +168,3 @@ class ConceptMap(models.Model):
     def __str__(self):
         return f"{self.title} (by {self.user.username})"
     
-    from django.db import models
