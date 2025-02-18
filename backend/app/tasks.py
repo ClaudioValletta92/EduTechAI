@@ -94,7 +94,8 @@ def process_pdf_task(self, lesson_id, title, file_path):
 def analyze_lesson_resources(lesson_id):
     """AI function to analyze lesson resources and generate a conceptual map."""
     lesson = Lesson.objects.get(id=lesson_id)
-
+    User = get_user_model()  # Get the active user model dynamically
+    user = User.objects.get(pk=1)
     # Simulated AI processing (Replace with actual AI function)
     time.sleep(5)  
 
@@ -110,8 +111,7 @@ def analyze_lesson_resources(lesson_id):
     }
 
     # Save or update the conceptual map
-    concept_map, created = ConceptMap.objects.get_or_create(lesson=lesson)
-    concept_map.data = generated_map
+    concept_map, created = ConceptMap.objects.get_or_create(lesson=lesson,data=generated_map,user=user)
     concept_map.save()
 
     # Mark lesson as analyzed

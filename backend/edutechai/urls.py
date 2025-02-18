@@ -1,4 +1,4 @@
-from app.views import project_list_create_view, lesson_list_by_project, upload_pdf,lesson_resource_list,lesson_concept_map,analyze_lesson
+from app.views import project_list_create_view, lesson_list_by_project, upload_pdf,lesson_resource_list,lesson_concept_map,analyze_lesson,lesson_detail,concept_map_detail
 from django.contrib import admin
 from django.urls import path
 
@@ -34,6 +34,8 @@ urlpatterns = [
         lesson_resource_list,
         name="lesson-resource-list",
     ),
-    path("api/lessons/<int:lesson_id>/concept-map/", lesson_concept_map, name="lesson_concept_map"),
+    path("api/lessons/<int:lesson_id>/concept-map/", lesson_concept_map, name="lesson-concept-map"),
     path("api/lessons/<int:lesson_id>/analyze/", analyze_lesson, name="analyze_lesson"),
+    path("api/lessons/<int:lesson_id>/", lesson_detail, name="lesson_detail"),
+    path("api/concept-maps/<int:concept_map_id>/", concept_map_detail, name="concept-map-detail"),
 ]

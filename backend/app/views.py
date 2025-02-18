@@ -157,6 +157,7 @@ def lesson_resource_list(request, lesson_id):
 
     return response
 
+
 @csrf_exempt
 @api_view(["GET", "POST"])
 def lesson_concept_map(request, lesson_id):
@@ -164,20 +165,36 @@ def lesson_concept_map(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
 
     if request.method == "GET":
-        concept_map, created = ConceptMap.objects.get_or_create(lesson=lesson, defaults={"data": {}})
-        return Response({"lesson": lesson.title, "data": concept_map.data})
+        # Fetch or create the conceptual map
+        concept_map, created = ConceptMap.objects.get_or_create(
+            lesson=lesson,
+            defaults={
+                "title": f"Concept Map for {lesson.title}",
+                "data": {},
+            }
+        )
+
+        # Return the whole concept map object
+        return Response({
+            "id": concept_map.id,
+            "title": concept_map.title,
+            "lesson": lesson.title,
+            "data": concept_map.data,
+            "created_at": concept_map.created_at,
+            "updated_at": concept_map.updated_at,
+        })
 
     if request.method == "POST":
         data = request.data.get("data", {})
         concept_map, created = ConceptMap.objects.get_or_create(lesson=lesson)
         concept_map.data = data
         concept_map.save()
-        return Response({"message": "Concept map saved"})
+        return Response({"message": "Concept map saved", "id": concept_map.id})
 
 
 
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
+
+@csrf_exempt
 def analyze_lesson(request, lesson_id):
     """Trigger AI analysis for a lesson's resources."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
@@ -186,3 +203,30 @@ def analyze_lesson(request, lesson_id):
     task = analyze_lesson_resources.delay(lesson.id)
 
     return Response({"message": "Analysis started", "task_id": task.id})
+
+def lesson_detail(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(id=lesson_id)
+        return JsonResponse({
+            "id": lesson.id,
+            "title": lesson.title,
+            "description": lesson.description,
+            "created_at": lesson.created_at.isoformat(),
+            "analyzed": lesson.analyzed
+        })
+    except Lesson.DoesNotExist:
+        return JsonResponse({"error": "Lesson not found"}, status=404)
+
+@csrf_exempt
+@api_view(["GET"])
+def concept_map_detail(request, concept_map_id):
+    """Retrieve a specific conceptual map by its ID."""
+    concept_map = get_object_or_404(ConceptMap, id=concept_map_id)
+
+    return Response({
+        "id": concept_map.id,
+        "title": concept_map.title,
+        "data": concept_map.data,
+        "created_at": concept_map.created_at,
+        "updated_at": concept_map.updated_at,
+    })

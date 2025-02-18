@@ -7,6 +7,7 @@ import ProfilePage from "./pages/ProfilePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProjectDetail from "./pages/ProjectDetail";
 import LessonDetail from "./pages/LessonDetail";
+import ConceptMapDetail from "./pages/ConceptMapDetail";
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -21,7 +22,7 @@ function AppRouter() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/project/:projectId" element={<ProjectDetail />} />
         <Route path="/lessons/:lessonId" element={<LessonDetail />} />
-
+        <Route path="/concept-maps/:conceptMapId" element={<ConceptMapDetail />} />
         {/* Catch-all route */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
