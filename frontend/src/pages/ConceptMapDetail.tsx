@@ -109,35 +109,43 @@ const ConceptMap = () => {
     [getClosestEdge, setEdges]
   );
 
-  // Function to add a new node dynamically
-  const addNewNode = () => {
-    const newNode = {
-      id: `${nodes.length + 1}`,
-      data: { label: `New Node ${nodes.length + 1}` },
-      position: { x: Math.random() * 600, y: Math.random() * 400 }, // Random placement
-    };
-    setNodes((nds) => [...nds, newNode]);
-  };
+  const addNewNode = useCallback(() => {
+    setNodes((prevNodes) => {
+      const newNode = {
+        id: `${prevNodes.length + 1}`,
+        data: { label: `New Node ${prevNodes.length + 1}` },
+        position: { x: Math.random() * 600, y: Math.random() * 400 },
+      };
+      return [...prevNodes, newNode]; // ✅ Ensure state updates correctly
+    });
+  }, [setNodes]);
+  
+  
 
   return (
     <div style={{ position: "relative", width: "100%" }}>
       {/* Button to Add Nodes */}
       <button
-        onClick={addNewNode}
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          padding: "10px 15px",
-          backgroundColor: "blue",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
-      >
-        + Add Node
-      </button>
+  onClick={(event) => {
+    event.stopPropagation(); // ✅ Prevent React Flow from capturing the click
+    addNewNode();
+  }}
+  style={{
+    position: "absolute",
+    top: 10,
+    right: 10,
+    padding: "10px 15px",
+    backgroundColor: "blue",
+    color: "white",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    zIndex: 10, // ✅ Ensures button is clickable
+  }}
+>
+  + Add Node
+</button>
+
 
       <div style={{ width: "100%", height: "500px" }}> {/* ✅ Ensure container has width & height */}
   <ReactFlow
