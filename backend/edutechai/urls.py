@@ -1,11 +1,11 @@
-from app.views import project_list_create_view, lesson_list_by_project, upload_pdf,lesson_resource_list,lesson_concept_map,analyze_lesson,lesson_detail,concept_map_detail
+from app.views import project_list_create_view, lesson_list_by_project, upload_pdf,lesson_resource_list,lesson_concept_map,analyze_lesson,lesson_detail,concept_map_detail,key_concept_lesson
 from django.contrib import admin
 from django.urls import path
 
 """
 URL configuration for edutechai project.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
+The `urlpatterns` list routes URLs to views. For more information please see:key_concept_map
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
 Examples:
 Function views
@@ -38,4 +38,5 @@ urlpatterns = [
     path("api/lessons/<int:lesson_id>/analyze/", analyze_lesson, name="analyze_lesson"),
     path("api/lessons/<int:lesson_id>/", lesson_detail, name="lesson_detail"),
     path("api/concept-maps/<int:concept_map_id>/", concept_map_detail, name="concept-map-detail"),
+    path("api/lessons/<int:lesson_id>/key-concept/", key_concept_lesson, name="lesson-key-concept"),
 ]

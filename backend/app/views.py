@@ -24,14 +24,15 @@ from rest_framework.decorators import permission_classes
 
 from celery.result import AsyncResult
 
-from .models import Project, Lesson, LessonResource,ConceptMap
+from .models import Project, Lesson, LessonResource, ConceptMap, KeyConcepts
 from .serializers import ProjectSerializer, LessonSerializer
-from .tasks import process_pdf_task,analyze_lesson_resources
+from .tasks import process_pdf_task, analyze_lesson_resources
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
 MEDIA_DIR = "/app/media/uploads"  # ✅ Shared directory inside the container
+
 
 @csrf_exempt
 def upload_pdf(request, lesson_id):
@@ -39,7 +40,9 @@ def upload_pdf(request, lesson_id):
     if request.method == "POST":
         lesson = Lesson.objects.get(pk=lesson_id)
         if lesson.analyzed:
-            return Response({"error": "Cannot add resources to an analyzed lesson."}, status=400)
+            return Response(
+                {"error": "Cannot add resources to an analyzed lesson."}, status=400
+            )
 
         title = request.POST.get("title")
         file = request.FILES.get("file")
@@ -47,7 +50,7 @@ def upload_pdf(request, lesson_id):
         if not file or not title:
             return JsonResponse({"error": "Title and file are required"}, status=400)
 
-       # Ensure the directory exists
+        # Ensure the directory exists
         os.makedirs(MEDIA_DIR, exist_ok=True)
 
         # Save file in the shared media directory
@@ -61,7 +64,6 @@ def upload_pdf(request, lesson_id):
 
         # Trigger Celery task
         process_pdf_task.delay(lesson.id, title, file_path)
-
 
         return JsonResponse({"message": "Processing started"}, status=202)
 
@@ -127,6 +129,7 @@ def lesson_list_by_project(request, project_id):
     else:
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
+
 @csrf_exempt
 @require_GET
 def lesson_resource_list(request, lesson_id):
@@ -171,18 +174,20 @@ def lesson_concept_map(request, lesson_id):
             defaults={
                 "title": f"Concept Map for {lesson.title}",
                 "data": {},
-            }
+            },
         )
 
         # Return the whole concept map object
-        return Response({
-            "id": concept_map.id,
-            "title": concept_map.title,
-            "lesson": lesson.title,
-            "data": concept_map.data,
-            "created_at": concept_map.created_at,
-            "updated_at": concept_map.updated_at,
-        })
+        return Response(
+            {
+                "id": concept_map.id,
+                "title": concept_map.title,
+                "lesson": lesson.title,
+                "data": concept_map.data,
+                "created_at": concept_map.created_at,
+                "updated_at": concept_map.updated_at,
+            }
+        )
 
     if request.method == "POST":
         data = request.data.get("data", {})
@@ -192,6 +197,33 @@ def lesson_concept_map(request, lesson_id):
         return Response({"message": "Concept map saved", "id": concept_map.id})
 
 
+@csrf_exempt
+@api_view(["GET"])
+def key_concept_lesson(request, lesson_id):
+    """Retrieve or create/update a conceptual map for a lesson."""
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    if request.method == "GET":
+        # Fetch or create the conceptual map
+        concept_map, created = KeyConcepts.objects.get_or_create(
+            lesson=lesson,
+            defaults={
+                "title": f"Key Concepts for {lesson.title}",
+                "data": {},
+            },
+        )
+
+        # Return the whole concept map object
+        return Response(
+            {
+                "id": concept_map.id,
+                "title": concept_map.title,
+                "lesson": lesson.title,
+                "data": concept_map.data,
+                "created_at": concept_map.created_at,
+                "updated_at": concept_map.updated_at,
+            }
+        )
 
 
 @csrf_exempt
@@ -204,18 +236,22 @@ def analyze_lesson(request, lesson_id):
 
     return Response({"message": "Analysis started", "task_id": task.id})
 
+
 def lesson_detail(request, lesson_id):
     try:
         lesson = Lesson.objects.get(id=lesson_id)
-        return JsonResponse({
-            "id": lesson.id,
-            "title": lesson.title,
-            "description": lesson.description,
-            "created_at": lesson.created_at.isoformat(),
-            "analyzed": lesson.analyzed
-        })
+        return JsonResponse(
+            {
+                "id": lesson.id,
+                "title": lesson.title,
+                "description": lesson.description,
+                "created_at": lesson.created_at.isoformat(),
+                "analyzed": lesson.analyzed,
+            }
+        )
     except Lesson.DoesNotExist:
         return JsonResponse({"error": "Lesson not found"}, status=404)
+
 
 @csrf_exempt
 @api_view(["GET"])
@@ -223,10 +259,29 @@ def concept_map_detail(request, concept_map_id):
     """Retrieve a specific conceptual map by its ID."""
     concept_map = get_object_or_404(ConceptMap, id=concept_map_id)
 
-    return Response({
-        "id": concept_map.id,
-        "title": concept_map.title,
-        "data": concept_map.data,
-        "created_at": concept_map.created_at,
-        "updated_at": concept_map.updated_at,
-    })
+    return Response(
+        {
+            "id": concept_map.id,
+            "title": concept_map.title,
+            "data": concept_map.data,
+            "created_at": concept_map.created_at,
+            "updated_at": concept_map.updated_at,
+        }
+    )
+
+
+@csrf_exempt
+@api_view(["GET"])
+def key_concept_detail(request, concept_map_id):
+    """Retrieve a specific conceptual map by its ID."""
+    concept_map = get_object_or_404(KeyConcepts, id=concept_map_id)
+
+    return Response(
+        {
+            "id": concept_map.id,
+            "title": concept_map.title,
+            "data": concept_map.data,
+            "created_at": concept_map.created_at,
+            "updated_at": concept_map.updated_at,
+        }
+    )
