@@ -7,6 +7,7 @@ from .models import (
     MonthlyAPIUsage,
     ConceptMap,
     KeyConcepts,
+    Summary,
 )
 
 admin.site.register(CustomUser)
@@ -16,3 +17,4 @@ admin.site.register(LessonResource)
 admin.site.register(MonthlyAPIUsage)
 admin.site.register(ConceptMap)
 admin.site.register(KeyConcepts)
+admin.site.register(Summary)

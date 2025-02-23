@@ -1,11 +1,9 @@
-// src/components/Modal.tsx
 import React from "react";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  // Optionally, you can pass additional style or className props
   overlayStyle?: React.CSSProperties;
   contentStyle?: React.CSSProperties;
 }
@@ -20,7 +18,7 @@ const defaultOverlayStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  zIndex: 1000,
+  zIndex: 1000, // Make sure the modal is above everything
 };
 
 const defaultContentStyle: React.CSSProperties = {
@@ -29,6 +27,7 @@ const defaultContentStyle: React.CSSProperties = {
   borderRadius: "8px",
   width: "90%",
   maxWidth: "500px",
+  zIndex: 1001, // Ensure modal content is above overlay
 };
 
 const Modal: React.FC<ModalProps> = ({
@@ -41,8 +40,12 @@ const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div style={{ ...defaultOverlayStyle, ...overlayStyle }} onClick={onClose}>
+    <div
+      style={{ ...defaultOverlayStyle, ...overlayStyle }}
+      onClick={onClose} // Close the modal if the overlay is clicked
+    >
       <div
+        className="modal-overlay"
         style={{ ...defaultContentStyle, ...contentStyle }}
         onClick={(e) => e.stopPropagation()} // Prevent click events from closing the modal when clicking inside the content
       >

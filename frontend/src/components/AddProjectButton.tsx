@@ -50,14 +50,20 @@ function AddProjectButton({ onProjectCreated }) {
 
   return (
     <div>
-      <button onClick={handleAddProjectClick}>Add Project</button>
+      <button
+        onClick={handleAddProjectClick}
+        className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-all"
+      >
+        Add Project
+      </button>
 
       <Modal isOpen={showForm} onClose={() => setShowForm(false)}>
-        <h2>Create New Project</h2>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: "1rem" }}>
-            <label htmlFor="title">Title:</label>
-            <br />
+        <h2 className="text-2xl font-semibold mb-4">Create New Project</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="title" className="block font-medium text-gray-700">
+              Title:
+            </label>
             <input
               type="text"
               id="title"
@@ -65,29 +71,40 @@ function AddProjectButton({ onProjectCreated }) {
               value={project.title}
               onChange={handleChange}
               required
-              style={{ width: "100%" }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <div style={{ marginBottom: "1rem" }}>
-            <label htmlFor="description">Description:</label>
-            <br />
+          <div>
+            <label
+              htmlFor="description"
+              className="block font-medium text-gray-700"
+            >
+              Description:
+            </label>
             <textarea
               id="description"
               name="description"
               value={project.description}
               onChange={handleChange}
               required
-              style={{ width: "100%" }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <button type="submit">Create Project</button>
-          <button
-            type="button"
-            onClick={() => setShowForm(false)}
-            style={{ marginLeft: "1rem" }}
-          >
-            Cancel
-          </button>
+          <div className="flex justify-between">
+            <button
+              type="submit"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all"
+            >
+              Create Project
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-all"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </Modal>
     </div>

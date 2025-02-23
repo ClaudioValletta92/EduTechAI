@@ -20,32 +20,21 @@ function ProjectsList({ onSelectProject }) {
   }, []);
 
   return (
-    <div>
-      <h2 style={{ textAlign: "center", marginTop: "20px" }}>Your Projects</h2>
+    <div className="p-6">
+      <h2 className="text-center text-2xl font-semibold my-6">Your Projects</h2>
       {/* ✅ Pass fetchProjects to AddProjectButton so it can refresh the list */}
       <AddProjectButton onProjectCreated={fetchProjects} />
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-          gap: "20px",
-          padding: "20px",
-        }}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
         {projects.map((project) => (
           <div
             key={project.pk}
-            style={{
-              border: "1px solid #ddd",
-              padding: "16px",
-              borderRadius: "8px",
-              background: "#fff",
-              cursor: "pointer",
-            }}
+            className="border border-gray-300 rounded-lg p-4 bg-white shadow-lg cursor-pointer hover:bg-gray-100 transition-colors"
             onClick={() => onSelectProject(project)} // Click to show details
           >
-            <h3>{project.fields.title}</h3>
-            <p>{truncateText(project.fields.description, 20)}</p>
+            <h3 className="text-lg font-semibold">{project.fields.title}</h3>
+            <p className="text-gray-600">
+              {truncateText(project.fields.description, 20)}
+            </p>
           </div>
         ))}
       </div>

@@ -24,7 +24,7 @@ from rest_framework.decorators import permission_classes
 
 from celery.result import AsyncResult
 
-from .models import Project, Lesson, LessonResource, ConceptMap, KeyConcepts
+from .models import Project, Lesson, LessonResource, ConceptMap, KeyConcepts, Summary
 from .serializers import ProjectSerializer, LessonSerializer
 from .tasks import process_pdf_task, analyze_lesson_resources
 
@@ -285,3 +285,32 @@ def lesson_detail(request, lesson_id):
         )
     except Lesson.DoesNotExist:
         return JsonResponse({"error": "Lesson not found"}, status=404)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def summaries_lesson(request, lesson_id):
+    """Retrieve or create/update a conceptual map for a lesson."""
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    if request.method == "GET":
+        # Fetch or create the conceptual map
+        summaries, created = Summary.objects.get_or_create(
+            lesson=lesson,
+            defaults={
+                "title": f"Key Concepts for {lesson.title}",
+                "text": "default",
+            },
+        )
+
+        # Return the whole concept map object
+        return Response(
+            {
+                "id": summaries.id,
+                "title": summaries.title,
+                "lesson": lesson.lesson,
+                "content": summaries.content,
+                "created_at": summaries.created_at,
+                "updated_at": summaries.updated_at,
+            }
+        )

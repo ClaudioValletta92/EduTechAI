@@ -1,3 +1,4 @@
+// src/components/ProjectDetail.jsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Modal from "../components/Modal";
@@ -62,29 +63,43 @@ function ProjectDetail({ project, onBack }) {
   };
 
   return (
-    <div>
-      <button onClick={onBack} style={{ marginBottom: "10px" }}>
+    <div className="p-4">
+      <button
+        onClick={onBack}
+        className="mb-4 text-blue-600 hover:text-blue-800 transition-all"
+      >
         ← Back to Projects
       </button>
-      <h2>{project.fields.title} - Lessons</h2>
-      <button onClick={handleAddLessonClick} style={{ marginBottom: "10px" }}>
+      <h2 className="text-3xl font-semibold mb-4">
+        {project.fields.title} - Lessons
+      </h2>
+      <button
+        onClick={handleAddLessonClick}
+        className="mb-4 text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 transition-all"
+      >
         ➕ Add Lesson
       </button>
-      <ul>
+      <ul className="space-y-2">
         {lessons.map((lesson) => (
-          <li key={lesson.pk}>
-            <Link to={`/lessons/${lesson.pk}`}>{lesson.fields.title}</Link>
+          <li key={lesson.pk} className="flex justify-between items-center">
+            <Link
+              to={`/lessons/${lesson.pk}`}
+              className="text-blue-600 hover:text-blue-800 transition-all"
+            >
+              {lesson.fields.title}
+            </Link>
           </li>
         ))}
       </ul>
 
       {/* Modal for Adding a New Lesson */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-        <h2>Add New Lesson</h2>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: "1rem" }}>
-            <label htmlFor="title">Lesson Title:</label>
-            <br />
+        <h2 className="text-2xl font-semibold mb-4">Add New Lesson</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="title" className="block font-medium text-gray-700">
+              Lesson Title:
+            </label>
             <input
               type="text"
               id="title"
@@ -92,17 +107,24 @@ function ProjectDetail({ project, onBack }) {
               value={newLesson.title}
               onChange={handleChange}
               required
-              style={{ width: "100%" }}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <button type="submit">Create Lesson</button>
-          <button
-            type="button"
-            onClick={() => setShowModal(false)}
-            style={{ marginLeft: "1rem" }}
-          >
-            Cancel
-          </button>
+          <div className="flex justify-between">
+            <button
+              type="submit"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all"
+            >
+              Create Lesson
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-all"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </Modal>
     </div>

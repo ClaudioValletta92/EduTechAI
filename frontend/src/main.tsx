@@ -9,6 +9,8 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
+      {" "}
+      {/* Wrap your app with ChakraProvider */}
       <AppRouter />
     </React.StrictMode>
   );

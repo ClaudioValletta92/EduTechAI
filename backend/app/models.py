@@ -193,3 +193,19 @@ class KeyConcepts(models.Model):
 
     def __str__(self):
         return f"{self.title} (by {self.user.username})"
+
+
+class Summary(models.Model):
+    """Stores a summary for a lesson in JSON format for easy retrieval and modification."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    content = models.TextField()  # Stores the textual content of the summary
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    lesson = models.OneToOneField(  # Each lesson has ONE summary
+        "Lesson", on_delete=models.CASCADE, related_name="summary"
+    )
+
+    def __str__(self):
+        return f"Summary: {self.title} (by {self.user.username})"

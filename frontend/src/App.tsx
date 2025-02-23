@@ -8,32 +8,15 @@ import ProjectDetail from "./pages/ProjectDetail";
 function App() {
   const [selectedProject, setSelectedProject] = useState(null);
 
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    flexDirection: "column",
-    height: "100vh",
-  };
-
-  const contentStyle: React.CSSProperties = {
-    display: "flex",
-    flex: 1,
-  };
-
-  const mainStyle: React.CSSProperties = {
-    flex: 1,
-    padding: "1rem",
-    background: "#fff",
-  };
-
   return (
-    <div style={containerStyle}>
+    <div className="flex flex-col h-screen">
       <Header />
 
-      <div style={contentStyle}>
+      <div className="flex flex-1">
         <Sidebar />
 
         {/* Conditionally render ProjectList or ProjectDetail */}
-        <main style={mainStyle}>
+        <main className="flex-1 p-4 bg-white">
           {selectedProject ? (
             <ProjectDetail
               project={selectedProject}
