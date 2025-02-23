@@ -8,6 +8,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import ProjectDetail from "./pages/ProjectDetail";
 import LessonDetail from "./pages/LessonDetail";
 import ConceptMapDetail from "./pages/ConceptMapDetail";
+import KeyConceptsDetail from "./pages/KeyConceptsDetail";
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -22,12 +23,18 @@ function AppRouter() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/project/:projectId" element={<ProjectDetail />} />
         <Route path="/lessons/:lessonId" element={<LessonDetail />} />
-        <Route path="/concept-maps/:conceptMapId" element={<ConceptMapDetail />} />
+        <Route
+          path="/concept-maps/:conceptMapId"
+          element={<ConceptMapDetail />}
+        />
+        <Route
+          path="/key-concepts/:keyConceptsId"
+          element={<KeyConceptsDetail />}
+        />
         {/* Catch-all route */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
 }
-
 export default AppRouter;

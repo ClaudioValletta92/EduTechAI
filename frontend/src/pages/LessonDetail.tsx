@@ -11,6 +11,9 @@ function LessonDetail() {
   const [resources, setResources] = useState([]);
   const [analyzed, setAnalyzed] = useState(false);
   const [conceptMap, setConceptMap] = useState<{ title: string } | null>(null);
+  const [keyConcepts, setKeyConcepts] = useState<{ title: string } | null>(
+    null
+  );
   useEffect(() => {
     // Fetch lesson details
     fetch(`http://localhost:8000/api/lessons/${lessonId}/`)
@@ -20,7 +23,7 @@ function LessonDetail() {
         setAnalyzed(data.analyzed);
       })
       .catch((error) => console.error("Error fetching lesson details:", error));
-  
+
     // Fetch lesson resources
     fetch(`http://localhost:8000/api/lessons/${lessonId}/resources`)
       .then((res) => res.json())
@@ -29,7 +32,7 @@ function LessonDetail() {
         setResources(data.resources);
       })
       .catch((error) => console.error("Error fetching resources:", error));
-  
+
     // Fetch conceptual map if the lesson is analyzed
     if (analyzed) {
       console.log("Fetching conceptual map for lesson:", lessonId); // ✅ Debugging log
@@ -43,9 +46,20 @@ function LessonDetail() {
           setConceptMap(data);
         })
         .catch((error) => console.error("Error fetching concept map:", error));
+
+      console.log("Fetching key concepts for lesson:", lessonId); // ✅ Debugging log
+      fetch(`http://localhost:8000/api/lessons/${lessonId}/key-concept/`)
+        .then((res) => {
+          console.log("Key concepts Response Status:", res.status); // ✅ Debugging log
+          return res.json();
+        })
+        .then((data) => {
+          console.log("Concept Map Data:", data); // ✅ Debugging log
+          setKeyConcepts(data);
+        })
+        .catch((error) => console.error("Error fetching key concepts:", error));
     }
   }, [lessonId, analyzed]);
-  
 
   const handleAnalyze = () => {
     fetch(`http://localhost:8000/api/lessons/${lessonId}/analyze/`, {
@@ -106,7 +120,14 @@ function LessonDetail() {
 
           {/* If analyzed, show additional sections */}
           {analyzed && (
-            <div style={{ marginTop: "2rem", padding: "1rem", background: "#f9f9f9", borderRadius: "5px" }}>
+            <div
+              style={{
+                marginTop: "2rem",
+                padding: "1rem",
+                background: "#f9f9f9",
+                borderRadius: "5px",
+              }}
+            >
               <h3>Analysis</h3>
               <div style={{ marginTop: "1rem" }}>
                 <h4>📄 Summary</h4>
@@ -115,7 +136,16 @@ function LessonDetail() {
 
               <div style={{ marginTop: "1rem" }}>
                 <h4>🔑 Key Concepts</h4>
-                <p>Key concepts will be displayed here.</p>
+                {keyConcepts ? (
+                  <Link
+                    to={`/key-concepts/${keyConcepts.id}`}
+                    style={{ textDecoration: "none", color: "blue" }}
+                  >
+                    <p style={{ cursor: "pointer" }}>{keyConcepts.title} 🔗</p>
+                  </Link>
+                ) : (
+                  <p>Conceptual map is not available.</p>
+                )}
               </div>
 
               <div style={{ marginTop: "1rem" }}>
@@ -127,7 +157,10 @@ function LessonDetail() {
               <div style={{ marginTop: "1rem" }}>
                 <h4>🗺️ Conceptual Map</h4>
                 {conceptMap ? (
-                  <Link to={`/concept-maps/${conceptMap.id}`} style={{ textDecoration: "none", color: "blue" }}>
+                  <Link
+                    to={`/concept-maps/${conceptMap.id}`}
+                    style={{ textDecoration: "none", color: "blue" }}
+                  >
                     <p style={{ cursor: "pointer" }}>{conceptMap.title} 🔗</p>
                   </Link>
                 ) : (

@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.conf import settings
 
+
 class CustomUser(AbstractUser):
     age = models.PositiveIntegerField(
         null=True, blank=True, help_text="Età dell'utente"
@@ -77,7 +78,9 @@ class Lesson(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    analyzed = models.BooleanField(default=False)  # NEW: Track if the lesson has been analyzed
+    analyzed = models.BooleanField(
+        default=False
+    )  # NEW: Track if the lesson has been analyzed
 
     def __str__(self):
         return self.title
@@ -108,6 +111,7 @@ class UserActivity(models.Model):
             return f"{self.user.username} opened project {self.project.title} at {self.opened_at}"
         return f"{self.user.username} activity at {self.opened_at}"
 
+
 class LessonResource(models.Model):
     class ResourceType(models.TextChoices):
         PDF = "pdf", "PDF"
@@ -126,9 +130,7 @@ class LessonResource(models.Model):
     subject = models.TextField(blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     resource_type = models.CharField(
-        max_length=10,
-        choices=ResourceType.choices,
-        default=ResourceType.OTHER
+        max_length=10, choices=ResourceType.choices, default=ResourceType.OTHER
     )
 
     class Meta:
@@ -150,13 +152,20 @@ class MonthlyAPIUsage(models.Model):
     total_characters_processed = models.IntegerField(default=0)  # For Azure TTS
 
     class Meta:
-        unique_together = ("user", "service", "month", "year")  # Avoid duplicate entries
+        unique_together = (
+            "user",
+            "service",
+            "month",
+            "year",
+        )  # Avoid duplicate entries
 
     def __str__(self):
         return f"{self.user.username} - {self.service} - {self.month}/{self.year}"
 
+
 class ConceptMap(models.Model):
     """Stores a conceptual map in JSON format for easy retrieval and modification."""
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     data = models.JSONField()  # Stores React Flow JSON (nodes, edges)
@@ -165,19 +174,22 @@ class ConceptMap(models.Model):
     lesson = models.OneToOneField(  # Each lesson has ONE conceptual map
         "Lesson", on_delete=models.CASCADE, related_name="concept_map"
     )
+
     def __str__(self):
         return f"{self.title} (by {self.user.username})"
-    
+
+
 class KeyConcepts(models.Model):
     """Stores a conceptual map in JSON format for easy retrieval and modification."""
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     data = models.JSONField()  # Stores React Flow JSON (nodes, edges)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     lesson = models.OneToOneField(  # Each lesson has ONE conceptual map
-        "Lesson", on_delete=models.CASCADE, related_name="concept_map"
+        "Lesson", on_delete=models.CASCADE, related_name="key_concepts"
     )
+
     def __str__(self):
         return f"{self.title} (by {self.user.username})"
-    

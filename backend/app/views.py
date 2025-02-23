@@ -131,7 +131,7 @@ def lesson_list_by_project(request, project_id):
 
 
 @csrf_exempt
-@require_GET
+@api_view(["GET"])
 def lesson_resource_list(request, lesson_id):
     """
     Retrieve all resources for a specific lesson.
@@ -237,22 +237,6 @@ def analyze_lesson(request, lesson_id):
     return Response({"message": "Analysis started", "task_id": task.id})
 
 
-def lesson_detail(request, lesson_id):
-    try:
-        lesson = Lesson.objects.get(id=lesson_id)
-        return JsonResponse(
-            {
-                "id": lesson.id,
-                "title": lesson.title,
-                "description": lesson.description,
-                "created_at": lesson.created_at.isoformat(),
-                "analyzed": lesson.analyzed,
-            }
-        )
-    except Lesson.DoesNotExist:
-        return JsonResponse({"error": "Lesson not found"}, status=404)
-
-
 @csrf_exempt
 @api_view(["GET"])
 def concept_map_detail(request, concept_map_id):
@@ -285,3 +269,19 @@ def key_concept_detail(request, concept_map_id):
             "updated_at": concept_map.updated_at,
         }
     )
+
+
+def lesson_detail(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(id=lesson_id)
+        return JsonResponse(
+            {
+                "id": lesson.id,
+                "title": lesson.title,
+                "description": lesson.description,
+                "created_at": lesson.created_at.isoformat(),
+                "analyzed": lesson.analyzed,
+            }
+        )
+    except Lesson.DoesNotExist:
+        return JsonResponse({"error": "Lesson not found"}, status=404)

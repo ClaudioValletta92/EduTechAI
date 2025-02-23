@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "tailwindcss";
 
 export default defineConfig({
   plugins: [react()],
@@ -10,5 +11,8 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
+  },
+  css: {
+    postcss: { plugins: [tailwindcss()] }, // Vite will automatically find the postcss.config.js file
   },
 });
