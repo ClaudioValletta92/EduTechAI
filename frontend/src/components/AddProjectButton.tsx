@@ -1,15 +1,43 @@
-// src/components/AddProjectButton.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "./Modal";
 
 function AddProjectButton({ onProjectCreated }) {
   // State to control the display of the modal
   const [showForm, setShowForm] = useState(false);
+  
   // State for the new project data
   const [project, setProject] = useState({
     title: "",
     description: "",
+    backgroundType: "preset", // Default background type
+    backgroundPreset: "",     // For preset images
+    gradientStart: "",        // For gradient start color
+    gradientEnd: "",          // For gradient end color
   });
+
+  // State to store available preset background images
+  const [backgroundImages, setBackgroundImages] = useState([]);
+
+  // Fetch background images from the API when the modal is opened
+  useEffect(() => {
+    if (showForm) {
+      fetchBackgroundImages();
+    }
+  }, [showForm]);
+
+  const fetchBackgroundImages = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/api/backgrounds/");
+      if (response.ok) {
+        const data = await response.json();
+        setBackgroundImages(data);  // Assuming the response is an array of background images
+      } else {
+        console.error("Failed to fetch background images");
+      }
+    } catch (error) {
+      console.error("Error fetching background images:", error);
+    }
+  };
 
   const handleAddProjectClick = () => {
     setShowForm(true);
@@ -27,7 +55,14 @@ function AddProjectButton({ onProjectCreated }) {
       });
       if (response.ok) {
         alert("Project created successfully!");
-        setProject({ title: "", description: "" });
+        setProject({
+          title: "",
+          description: "",
+          backgroundType: "preset",
+          backgroundPreset: "",
+          gradientStart: "",
+          gradientEnd: "",
+        });
         setShowForm(false);
         // Call the callback to refresh the projects list
         if (onProjectCreated) {
@@ -90,6 +125,77 @@ function AddProjectButton({ onProjectCreated }) {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
+          <div>
+            <label htmlFor="backgroundType" className="block font-medium text-gray-700">
+              Background Type:
+            </label>
+            <select
+              id="backgroundType"
+              name="backgroundType"
+              value={project.backgroundType}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="preset">Preset Image</option>
+              <option value="color">Color Gradient</option>
+            </select>
+          </div>
+
+          {project.backgroundType === "preset" && (
+            <div>
+              <label htmlFor="backgroundPreset" className="block font-medium text-gray-700">
+                Background Preset Image:
+              </label>
+              <select
+                id="backgroundPreset"
+                name="backgroundPreset"
+                value={project.backgroundPreset}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select a background image</option>
+                {backgroundImages.map((image) => (
+                  <option key={image.id} value={image.name}>
+                    {image.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {project.backgroundType === "color" && (
+            <div>
+              <label htmlFor="gradientStart" className="block font-medium text-gray-700">
+                Gradient Start Color:
+              </label>
+              <input
+                type="color"
+                id="gradientStart"
+                name="gradientStart"
+                value={project.gradientStart}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+
+          {project.backgroundType === "color" && (
+            <div>
+              <label htmlFor="gradientEnd" className="block font-medium text-gray-700">
+                Gradient End Color:
+              </label>
+              <input
+                type="color"
+                id="gradientEnd"
+                name="gradientEnd"
+                value={project.gradientEnd}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          )}
+
           <div className="flex justify-between">
             <button
               type="submit"

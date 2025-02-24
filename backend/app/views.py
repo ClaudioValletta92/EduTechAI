@@ -24,7 +24,7 @@ from rest_framework.decorators import permission_classes
 
 from celery.result import AsyncResult
 
-from .models import Project, Lesson, LessonResource, ConceptMap, KeyConcepts, Summary
+from .models import Project, Lesson, LessonResource, ConceptMap, KeyConcepts, Summary,BackgroundImage
 from .serializers import ProjectSerializer, LessonSerializer
 from .tasks import process_pdf_task, analyze_lesson_resources
 
@@ -314,3 +314,22 @@ def summaries_lesson(request, lesson_id):
                 "updated_at": summaries.updated_at,
             }
         )
+
+@csrf_exempt
+def available_background_images_view(request):
+    """Returns a list of all available background images from the database."""
+    # Fetch all BackgroundImage objects
+    backgrounds = BackgroundImage.objects.all()
+    
+    # Create a list of dictionaries with relevant information
+    background_list = [
+        {
+            'name': background.name,
+            'image_url': background.image.url,  # Assuming images are stored in MEDIA_URL
+            'description': background.description
+        }
+        for background in backgrounds
+    ]
+    
+    # Return as JSON
+    return JsonResponse(background_list, safe=False)

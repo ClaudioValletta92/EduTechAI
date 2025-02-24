@@ -9,6 +9,7 @@ from app.views import (
     concept_map_detail,
     key_concept_lesson,
     summaries_lesson,
+    available_background_images_view
 )
 from django.contrib import admin
 from django.urls import path
@@ -67,4 +68,5 @@ urlpatterns = [
         summaries_lesson,
         name="lesson-summaries",
     ),
+    path("api/available-backgrounds/", available_background_images_view, name="available-backgrounds"),
 ]

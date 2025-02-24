@@ -1,6 +1,9 @@
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.conf import settings
+from io import BytesIO
+from PIL import Image, ImageDraw
+from django.core.files.base import ContentFile
 
 
 class CustomUser(AbstractUser):
@@ -47,7 +50,6 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
 
-
 class Project(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -58,14 +60,55 @@ class Project(models.Model):
         CustomUser, blank=True, related_name="shared_projects"
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    # Campo last_updated che si aggiorna automaticamente ad ogni salvataggio
     last_updated = models.DateTimeField(auto_now=True)
 
-    background_color = models.CharField(
-        max_length=7,  # To store hex color codes like #RRGGBB
-        default="#ffffff",  # Default to white
-        help_text="Hex color code for the background (e.g., #ff0000 for red).",
+    # Background selection: Color gradient or Preset Image
+    background_type = models.CharField(
+        max_length=10, choices=BACKGROUND_CHOICES, default="preset"
     )
+    background_image = models.ForeignKey(
+        BackgroundImage, on_delete=models.SET_NULL, blank=True, null=True,
+        related_name="projects", help_text="Choose a predefined background image."
+    )
+
+    # Gradient color values
+    gradient_start = models.CharField(
+        max_length=7, blank=True, null=True,
+        help_text="Start color hex (e.g., #ff0000 for red)."
+    )
+    gradient_end = models.CharField(
+        max_length=7, blank=True, null=True,
+        help_text="End color hex (e.g., #ffff00 for yellow)."
+    )
+
+    def get_background(self):
+        """Returns the background image URL or dynamically generated gradient."""
+        if self.background_type == "preset" and self.background_image:
+            return self.background_image.image.url
+        elif self.background_type == "color" and self.gradient_start and self.gradient_end:
+            return self.generate_gradient_image()
+        return None  # No background set
+
+    def generate_gradient_image(self, width=300, height=200):
+        """Dynamically generate a gradient image from two hex colors (no DB storage)."""
+        if not self.gradient_start or not self.gradient_end:
+            return None
+
+        img = Image.new("RGB", (width, height))
+        draw = ImageDraw.Draw(img)
+
+        for i in range(height):
+            ratio = i / height
+            r = int((1 - ratio) * int(self.gradient_start[1:3], 16) + ratio * int(self.gradient_end[1:3], 16))
+            g = int((1 - ratio) * int(self.gradient_start[3:5], 16) + ratio * int(self.gradient_end[3:5], 16))
+            b = int((1 - ratio) * int(self.gradient_start[5:7], 16) + ratio * int(self.gradient_end[5:7], 16))
+            draw.line([(0, i), (width, i)], fill=(r, g, b))
+
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+
+        return ContentFile(buffer.getvalue(), name=f"{self.pk}_gradient.png")
 
     def __str__(self):
         return self.title
@@ -209,3 +252,11 @@ class Summary(models.Model):
 
     def __str__(self):
         return f"Summary: {self.title} (by {self.user.username})"
+
+class BackgroundImage(models.Model):
+    name = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='backgrounds/')
+    description = models.TextField()
+
+    def __str__(self):
+        return self.name
