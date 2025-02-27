@@ -28,13 +28,35 @@ function ProjectsList({ onSelectProject }) {
         {projects.map((project) => (
           <div
             key={project.pk}
-            className="border border-gray-300 rounded-lg p-4 bg-white shadow-lg cursor-pointer hover:bg-gray-100 transition-colors"
+            className="relative border border-gray-300 rounded-lg p-4 bg-white shadow-lg cursor-pointer hover:bg-gray-100 transition-all duration-300"
+            style={{
+              minHeight: "300px", // Set the minimum height of the card
+            }}
             onClick={() => onSelectProject(project)} // Click to show details
           >
-            <h3 className="text-lg font-semibold">{project.fields.title}</h3>
-            <p className="text-gray-600">
-              {truncateText(project.fields.description, 20)}
-            </p>
+            {/* Background image with hover darkening */}
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-all duration-300"
+              style={{
+                backgroundImage: project.fields.background_image
+                  ? `url(http://localhost:8000${project.fields.background_image})`
+                  : 'none',
+              }}
+            >
+              {/* Hover effect to darken only the background image */}
+              <div className="absolute inset-0 bg-black opacity-0 hover:opacity-40 transition-opacity duration-300"></div>
+            </div>
+
+            {/* Text overlay at the bottom right of the card */}
+            <div
+              className="absolute bottom-4 right-4 p-4 bg-black bg-opacity-50 text-white rounded-md"
+              style={{
+                maxWidth: '80%', // Ensure text doesn't overflow
+              }}
+            >
+              <h3 className="text-lg font-semibold">{project.fields.title}</h3>
+              <p className="text-sm">{truncateText(project.fields.description, 20)}</p>
+            </div>
           </div>
         ))}
       </div>

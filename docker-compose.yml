@@ -14,24 +14,25 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    build: ./backend
-    volumes:
-      - ./backend:/usr/src/app
-      - ./backend/staticfiles:/usr/src/app/staticfiles
-      - ./media:/app/media
-    ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    depends_on:
-      - db
-      - redis
-    command: >
-      sh -c "python manage.py wait_for_db &&
-            python manage.py makemigrations &&
-            python manage.py migrate &&
-            python manage.py collectstatic --noinput &&
-            python manage.py runserver 0.0.0.0:8000"
+      build: ./backend
+      volumes:
+        - ./backend:/usr/src/app
+        - ./backend/staticfiles:/usr/src/app/staticfiles
+        - /Users/claudiovalletta/Documents/EdutechAI/backend/media:/app/media  # Mount absolute path
+        - ./backend/media:/app/media
+      ports:
+        - "8000:8000"
+      env_file:
+        - .env
+      depends_on:
+        - db
+        - redis
+      command: >
+        sh -c "python manage.py wait_for_db &&
+              python manage.py makemigrations &&
+              python manage.py migrate &&
+              python manage.py collectstatic --noinput &&
+              python manage.py runserver 0.0.0.0:8000"
 
   frontend:
     build: ./frontend
@@ -53,7 +54,7 @@ services:
   celery_worker:
     build: ./backend
     volumes:
-      - ./media:/app/media
+      - /Users/claudiovalletta/Documents/EdutechAI/backend/media:/app/media  # Mount absolute path
     env_file:
       - .env
     command: >

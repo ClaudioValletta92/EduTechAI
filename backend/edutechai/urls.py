@@ -13,6 +13,8 @@ from app.views import (
 )
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 
 """
 URL configuration for edutechai project.
@@ -69,4 +71,5 @@ urlpatterns = [
         name="lesson-summaries",
     ),
     path("api/available-backgrounds/", available_background_images_view, name="available-backgrounds"),
-]
+    
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -69,26 +69,62 @@ def upload_pdf(request, lesson_id):
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
-
 @csrf_exempt
 def project_list_create_view(request):
     if request.method == "GET":
         projects = Project.objects.all()
-        data = serialize("json", projects)
-        return JsonResponse(json.loads(data), safe=False)
+        project_data = []
+
+        for project in projects:
+            # Create a dictionary of the project fields
+            project_info = {
+                'pk': project.pk,
+                'fields': {
+                    'title': project.title,
+                    'description': project.description,
+                    'background_image': project.background_image.image.url if project.background_image else None,  # Add the background image URL here
+                }
+            }
+            project_data.append(project_info)
+
+        return JsonResponse(project_data, safe=False)
+    
     elif request.method == "POST":
         default_user = User.objects.get(pk=1)  # Make sure a user with pk=1 exists
         try:
             data = json.loads(request.body)
             title = data.get("title")
             description = data.get("description")
+            background = data.get("background")  # Get the background image (preset or blended)
+
             if not title:
                 return JsonResponse({"error": "Title is required"}, status=400)
-            project = Project.objects.create(
-                title=title, description=description, created_by=default_user
-            )
+
+            if background:
+                # Check if the background is a preset or blended image
+                try:
+                    background_image = BackgroundImage.objects.get(name=background)
+                except BackgroundImage.DoesNotExist:
+                    return JsonResponse({"error": "Selected background image does not exist"}, status=400)
+
+                # If the background image exists, assign it to the project
+                project = Project.objects.create(
+                    title=title,
+                    description=description,
+                    created_by=default_user,
+                    background_image=background_image  # Assuming Project has a field to store the background image
+                )
+            else:
+                # Create the project without a background image if none is selected
+                project = Project.objects.create(
+                    title=title,
+                    description=description,
+                    created_by=default_user,
+                )
+
             data = serialize("json", [project])
             return JsonResponse(json.loads(data)[0], status=201)
+
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
@@ -321,12 +357,13 @@ def available_background_images_view(request):
     # Fetch all BackgroundImage objects
     backgrounds = BackgroundImage.objects.all()
     
-    # Create a list of dictionaries with relevant information
+    # Create a list of dictionaries with relevant information, including the 'type'
     background_list = [
         {
             'name': background.name,
             'image_url': background.image.url,  # Assuming images are stored in MEDIA_URL
-            'description': background.description
+            'description': background.description,
+            'type': background.type  # Add the type field here
         }
         for background in backgrounds
     ]
