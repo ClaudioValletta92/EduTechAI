@@ -78,7 +78,7 @@ function ProjectDetail({ project, onBack }) {
       <div className="relative z-10 p-6">
         <button
           onClick={onBack}
-          className="mb-4 text-blue-600 hover:text-blue-800 transition-all"
+          className="mb-4 text-white hover:text-blue-600 transition-all"
         >
           ← Back to Projects
         </button>
@@ -102,18 +102,23 @@ function ProjectDetail({ project, onBack }) {
           ➕ Add Lesson
         </button>
 
-        <ul className="space-y-2">
+        {/* Lessons List */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {lessons.map((lesson) => (
-            <li key={lesson.pk} className="flex justify-between items-center">
+            <div
+              key={lesson.pk}
+              className="bg-white p-4 border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition-all"
+            >
               <Link
-                to={`/lessons/${lesson.pk}`}
-                className="text-blue-600 hover:text-blue-800 transition-all"
+                to={`/lessons/${lesson.pk}`}  // This is the link to LessonDetail
+                state={{ project }}  // Passing project data through state
+                className="block text-blue-600 hover:text-blue-800 transition-all"
               >
-                {lesson.fields.title}
+                <h3 className="text-lg font-semibold">{lesson.fields.title}</h3>
               </Link>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
 
         {/* Modal for Adding a New Lesson */}
         <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
