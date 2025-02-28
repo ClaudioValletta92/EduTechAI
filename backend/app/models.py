@@ -148,7 +148,7 @@ class LessonResource(models.Model):
         Lesson, on_delete=models.CASCADE, related_name="resources"
     )
     title = models.CharField(max_length=255)
-    file = models.FileField(upload_to="")
+    file = models.FileField(upload_to="", blank=True, null=True)
     entry_text = models.TextField(blank=True)
     subject = models.TextField(blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)

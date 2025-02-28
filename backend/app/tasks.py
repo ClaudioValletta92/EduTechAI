@@ -8,8 +8,10 @@ from django.utils.timezone import now
 from django.db.models import F
 from django.contrib.auth import get_user_model
 import time
-
-
+from django.core.files.base import ContentFile
+from django.conf import settings
+import os
+import shutil
 logger = logging.getLogger(__name__)
 @shared_task(bind=True, max_retries=3)
 def process_pdf_task(self, lesson_id, title, file_path):
@@ -69,17 +71,30 @@ def process_pdf_task(self, lesson_id, title, file_path):
         )
 
         logger.info(f"✅ Updated monthly usage for {user.username} - {current_month}/{current_year}")
-
         # 🔥 Save LessonResource to DB
         with transaction.atomic():
-            lesson_resource = LessonResource.objects.create(
+            lesson_resource = LessonResource(
                 lesson=lesson,
                 title=title,
-                file=file_path,
                 entry_text=full_text_further_processed,
                 subject=subject,
                 resource_type=LessonResource.ResourceType.PDF
             )
+
+        # Extract just the filename
+        file_name = os.path.basename(file_path)
+
+        # Ensure the file is moved to MEDIA_ROOT
+        media_file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+
+        # Use shutil.move() to move across different filesystems
+        if not os.path.exists(media_file_path):
+            shutil.move(file_path, media_file_path)  # Works across different mounted volumes
+
+        # Save the file to FileField correctly
+        with open(media_file_path, "rb") as f:
+            lesson_resource.file.save(file_name, ContentFile(f.read()), save=True)
+
 
         return {"status": "success", "message": f"Text extracted and classified as {subject}"}
 

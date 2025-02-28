@@ -33,14 +33,17 @@ User = get_user_model()
 
 MEDIA_DIR = "/app/media/"  # ✅ Shared directory inside the container
 
-
 @csrf_exempt
 def upload_pdf(request, lesson_id):
-    """Handles PDF uploads and triggers async processing in Celery."""
+    """Handles PDF uploads and ensures the file is saved correctly."""
     if request.method == "POST":
-        lesson = Lesson.objects.get(pk=lesson_id)
+        try:
+            lesson = Lesson.objects.get(pk=lesson_id)
+        except Lesson.DoesNotExist:
+            return JsonResponse({"error": "Lesson not found"}, status=404)
+
         if lesson.analyzed:
-            return Response(
+            return JsonResponse(
                 {"error": "Cannot add resources to an analyzed lesson."}, status=400
             )
 
@@ -50,24 +53,18 @@ def upload_pdf(request, lesson_id):
         if not file or not title:
             return JsonResponse({"error": "Title and file are required"}, status=400)
 
-        # Ensure the directory exists
-        os.makedirs(MEDIA_DIR, exist_ok=True)
+        # Save the file using Django’s FileField
+        lesson_resource = LessonResource.objects.create(
+            lesson=lesson,
+            title=title,
+            file=file,  # Directly assign the uploaded file
+            resource_type=LessonResource.ResourceType.PDF
+        )
 
-        # Save file in the shared media directory
-        unique_filename = f"{uuid.uuid4().hex}_{file.name}"
-        file_path = os.path.join(MEDIA_DIR, unique_filename)
-
-        # Save the file
-        with open(file_path, "wb") as f:
-            for chunk in file.chunks():
-                f.write(chunk)
-
-        # Trigger Celery task
-        process_pdf_task.delay(lesson.id, title, file_path)
-
-        return JsonResponse({"message": "Processing started"}, status=202)
+        return JsonResponse({"message": "PDF uploaded successfully", "file_url": lesson_resource.file.url}, status=201)
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
 
 @csrf_exempt
 def project_list_create_view(request):
