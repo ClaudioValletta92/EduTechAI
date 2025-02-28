@@ -12,6 +12,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 from django.views.decorators.http import require_GET
+import time
 
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
@@ -24,14 +25,23 @@ from rest_framework.decorators import permission_classes
 
 from celery.result import AsyncResult
 
-from .models import Project, Lesson, LessonResource, ConceptMap, KeyConcepts, Summary,BackgroundImage
+from .models import (
+    Project,
+    Lesson,
+    LessonResource,
+    ConceptMap,
+    KeyConcepts,
+    Summary,
+    BackgroundImage,
+)
 from .serializers import ProjectSerializer, LessonSerializer
 from .tasks import process_pdf_task, analyze_lesson_resources
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
-MEDIA_DIR = "/app/media/"  # ✅ Shared directory inside the container
+
+MEDIA_DIR = "/app/media/uploads"  # ✅ Shared directory inside the container
 
 @csrf_exempt
 def upload_pdf(request, lesson_id):
@@ -58,10 +68,32 @@ def upload_pdf(request, lesson_id):
             lesson=lesson,
             title=title,
             file=file,  # Directly assign the uploaded file
-            resource_type=LessonResource.ResourceType.PDF
+            resource_type=LessonResource.ResourceType.PDF,
         )
+        lesson_resource.save()  # Ensure it's saved to the database
+        lesson_resource_id = lesson_resource.id
+        logger.info(f"lesson_id: {lesson.id}, lesson_resource_id: {lesson_resource_id}")
+        time.sleep(2)  # Delay for 2 seconds (you can adjust this as needed)
+        os.makedirs(MEDIA_DIR, exist_ok=True)
 
-        return JsonResponse({"message": "PDF uploaded successfully", "file_url": lesson_resource.file.url}, status=201)
+        # Save file in the shared media directory
+        unique_filename = f"{uuid.uuid4().hex}_{file.name}"
+        file_path = os.path.join(MEDIA_DIR, unique_filename)
+
+        # Save the file
+        with open(file_path, "wb") as f:
+            for chunk in file.chunks():
+                f.write(chunk)
+
+        process_pdf_task.delay(lesson_id, lesson_resource_id,file_path)
+
+        return JsonResponse(
+            {
+                "message": "PDF uploaded successfully",
+                "file_url": lesson_resource.file.url,
+            },
+            status=201,
+        )
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
 
@@ -75,24 +107,30 @@ def project_list_create_view(request):
         for project in projects:
             # Create a dictionary of the project fields
             project_info = {
-                'pk': project.pk,
-                'fields': {
-                    'title': project.title,
-                    'description': project.description,
-                    'background_image': project.background_image.image.url if project.background_image else None,  # Add the background image URL here
-                }
+                "pk": project.pk,
+                "fields": {
+                    "title": project.title,
+                    "description": project.description,
+                    "background_image": (
+                        project.background_image.image.url
+                        if project.background_image
+                        else None
+                    ),  # Add the background image URL here
+                },
             }
             project_data.append(project_info)
 
         return JsonResponse(project_data, safe=False)
-    
+
     elif request.method == "POST":
         default_user = User.objects.get(pk=1)  # Make sure a user with pk=1 exists
         try:
             data = json.loads(request.body)
             title = data.get("title")
             description = data.get("description")
-            background = data.get("background")  # Get the background image (preset or blended)
+            background = data.get(
+                "background"
+            )  # Get the background image (preset or blended)
 
             if not title:
                 return JsonResponse({"error": "Title is required"}, status=400)
@@ -102,14 +140,17 @@ def project_list_create_view(request):
                 try:
                     background_image = BackgroundImage.objects.get(name=background)
                 except BackgroundImage.DoesNotExist:
-                    return JsonResponse({"error": "Selected background image does not exist"}, status=400)
+                    return JsonResponse(
+                        {"error": "Selected background image does not exist"},
+                        status=400,
+                    )
 
                 # If the background image exists, assign it to the project
                 project = Project.objects.create(
                     title=title,
                     description=description,
                     created_by=default_user,
-                    background_image=background_image  # Assuming Project has a field to store the background image
+                    background_image=background_image,  # Assuming Project has a field to store the background image
                 )
             else:
                 # Create the project without a background image if none is selected
@@ -348,22 +389,23 @@ def summaries_lesson(request, lesson_id):
             }
         )
 
+
 @csrf_exempt
 def available_background_images_view(request):
     """Returns a list of all available background images from the database."""
     # Fetch all BackgroundImage objects
     backgrounds = BackgroundImage.objects.all()
-    
+
     # Create a list of dictionaries with relevant information, including the 'type'
     background_list = [
         {
-            'name': background.name,
-            'image_url': background.image.url,  # Assuming images are stored in MEDIA_URL
-            'description': background.description,
-            'type': background.type  # Add the type field here
+            "name": background.name,
+            "image_url": background.image.url,  # Assuming images are stored in MEDIA_URL
+            "description": background.description,
+            "type": background.type,  # Add the type field here
         }
         for background in backgrounds
     ]
-    
+
     # Return as JSON
     return JsonResponse(background_list, safe=False)
