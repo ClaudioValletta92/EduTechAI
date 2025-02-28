@@ -14,12 +14,10 @@ function UploadSection({ lessonId }: UploadSectionProps) {
     "idle" | "ready" | "uploading" | "success" | "error"
   >("idle");
 
-  // Open file picker
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-  // Store selected file
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
@@ -31,7 +29,6 @@ function UploadSection({ lessonId }: UploadSectionProps) {
     setUploadStatus("ready");
   };
 
-  // Confirm and upload
   const handleConfirmUpload = () => {
     if (!selectedFile || !title) {
       alert("Please enter a title and select a PDF file.");
@@ -64,87 +61,55 @@ function UploadSection({ lessonId }: UploadSectionProps) {
   };
 
   return (
-    <div>
-      {/* Button to open modal */}
+    <div className="flex flex-col items-center p-4">
       <button
         onClick={() => setIsModalOpen(true)}
-        style={{
-          background: "#007bff",
-          color: "#fff",
-          border: "none",
-          padding: "10px 15px",
-          cursor: "pointer",
-          borderRadius: "5px",
-          fontSize: "1rem",
-        }}
+        className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-all"
       >
         ➕ Add Resource
       </button>
 
-      {/* Modal for Upload Form */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h3>Upload a PDF Resource</h3>
+        <h3 className="text-lg font-semibold mb-4">Upload a PDF Resource</h3>
 
-        {/* Title Input */}
         <input
           type="text"
           placeholder="Enter resource title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          style={{
-            padding: "8px",
-            marginBottom: "10px",
-            display: "block",
-            width: "100%",
-            borderRadius: "5px",
-            border: "1px solid #ccc",
-          }}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
         />
 
-        {/* Hidden File Input */}
         <input
           type="file"
           accept="application/pdf"
-          style={{ display: "none" }}
+          className="hidden"
           ref={fileInputRef}
           onChange={handleFileChange}
         />
 
-        {/* Buttons */}
         <button
           onClick={handleUploadClick}
-          style={{
-            marginRight: "10px",
-            padding: "8px",
-            cursor: "pointer",
-          }}
+          className="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition-all"
         >
           Select PDF
         </button>
 
         {uploadStatus === "ready" && selectedFile && (
-          <div style={{ marginTop: "1rem" }}>
-            <p>Selected file: {selectedFile.name}</p>
+          <div className="mt-4">
+            <p className="text-gray-700">Selected file: {selectedFile.name}</p>
             <button
               onClick={handleConfirmUpload}
-              style={{
-                padding: "8px",
-                cursor: "pointer",
-              }}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition-all mt-2"
             >
               Confirm Upload
             </button>
           </div>
         )}
 
-        {/* Status Messages */}
-        {uploadStatus === "uploading" && <p>Uploading…</p>}
-        {uploadStatus === "success" && (
-          <p style={{ color: "green" }}>Upload successful ✅</p>
-        )}
-        {uploadStatus === "error" && (
-          <p style={{ color: "red" }}>Error uploading PDF. Please try again.</p>
-        )}
+        {uploadStatus === "uploading" && <p className="text-blue-500 mt-4">Uploading…</p>}
+        {uploadStatus === "success" && <p className="text-green-500 mt-4">Upload successful ✅</p>}
+        {uploadStatus === "error" && <p className="text-red-500 mt-4">Error uploading PDF. Please try again.</p>}
       </Modal>
     </div>
   );

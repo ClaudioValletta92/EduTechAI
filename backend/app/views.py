@@ -31,7 +31,7 @@ from .tasks import process_pdf_task, analyze_lesson_resources
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
-MEDIA_DIR = "/app/media/uploads"  # ✅ Shared directory inside the container
+MEDIA_DIR = "/app/media/"  # ✅ Shared directory inside the container
 
 
 @csrf_exempt
