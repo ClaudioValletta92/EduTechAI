@@ -109,13 +109,14 @@ function ProjectDetail({ project, onBack }) {
               key={lesson.pk}
               className="bg-white p-4 border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition-all"
             >
-              <Link
-                to={`/lessons/${lesson.pk}`}  // This is the link to LessonDetail
-                state={{ project }}  // Passing project data through state
-                className="block text-blue-600 hover:text-blue-800 transition-all"
-              >
-                <h3 className="text-lg font-semibold">{lesson.fields.title}</h3>
-              </Link>
+<Link
+  to={`/lessons/${lesson.pk}`}
+  state={{ project }} // ✅ Pass the project as state
+  className="block text-blue-600 hover:text-blue-800 transition-all"
+>
+  <h3 className="text-lg font-semibold">{lesson.fields.title}</h3>
+</Link>
+
             </div>
           ))}
         </div>
