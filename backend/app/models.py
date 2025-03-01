@@ -5,8 +5,8 @@ from django.conf import settings
 
 class BackgroundImage(models.Model):
     IMAGE_TYPE_CHOICES = [
-        ('preset', 'Preset Image'),
-        ('blended', 'Color Blended Image'),
+        ("preset", "Preset Image"),
+        ("blended", "Color Blended Image"),
     ]
 
     name = models.CharField(max_length=255)
@@ -15,8 +15,8 @@ class BackgroundImage(models.Model):
     type = models.CharField(
         max_length=10,
         choices=IMAGE_TYPE_CHOICES,
-        default='preset',
-        help_text="Type of background image (e.g., preset or color blended)"
+        default="preset",
+        help_text="Type of background image (e.g., preset or color blended)",
     )
 
     def __str__(self):
@@ -66,6 +66,8 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
 class Project(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -80,8 +82,12 @@ class Project(models.Model):
 
     # Background image selection
     background_image = models.ForeignKey(
-        BackgroundImage, on_delete=models.SET_NULL, blank=True, null=True,
-        related_name="projects", help_text="Choose a predefined background image."
+        BackgroundImage,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="projects",
+        help_text="Choose a predefined background image.",
     )
 
     def get_background(self):
@@ -206,16 +212,15 @@ class KeyConcepts(models.Model):
     """Stores a conceptual map in JSON format for easy retrieval and modification."""
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
     data = models.JSONField()  # Stores React Flow JSON (nodes, edges)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    lesson = models.OneToOneField(  # Each lesson has ONE conceptual map
+    lesson = models.ForeignKey(  # Each lesson can have multiple key concepts
         "Lesson", on_delete=models.CASCADE, related_name="key_concepts"
     )
 
     def __str__(self):
-        return f"{self.title} (by {self.user.username})"
+        return f"{self.lesson.title} (by {self.user.username})"
 
 
 class Summary(models.Model):

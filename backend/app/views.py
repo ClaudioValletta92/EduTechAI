@@ -241,6 +241,7 @@ def lesson_resource_list(request, lesson_id):
 def lesson_concept_map(request, lesson_id):
     """Retrieve or create/update a conceptual map for a lesson."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
+    default_user = User.objects.get(pk=1)
 
     if request.method == "GET":
         # Fetch or create the conceptual map
@@ -249,6 +250,7 @@ def lesson_concept_map(request, lesson_id):
             defaults={
                 "title": f"Concept Map for {lesson.title}",
                 "data": {},
+                "user": default_user,
             },
         )
 
@@ -277,14 +279,14 @@ def lesson_concept_map(request, lesson_id):
 def key_concept_lesson(request, lesson_id):
     """Retrieve or create/update a conceptual map for a lesson."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
-
+    default_user = User.objects.get(pk=1)
     if request.method == "GET":
         # Fetch or create the conceptual map
         concept_map, created = KeyConcepts.objects.get_or_create(
             lesson=lesson,
             defaults={
-                "title": f"Key Concepts for {lesson.title}",
                 "data": {},
+                "user": default_user,
             },
         )
 
@@ -292,7 +294,6 @@ def key_concept_lesson(request, lesson_id):
         return Response(
             {
                 "id": concept_map.id,
-                "title": concept_map.title,
                 "lesson": lesson.title,
                 "data": concept_map.data,
                 "created_at": concept_map.created_at,
@@ -302,14 +303,16 @@ def key_concept_lesson(request, lesson_id):
 
 
 @csrf_exempt
+@api_view(["POST"])
 def analyze_lesson(request, lesson_id):
     """Trigger AI analysis for a lesson's resources."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    # Parse JSON data from the request body
-    data = json.loads(request.body)
-    resume_length = data.get("resume_length")
-    conceptual_map_size = data.get("conceptual_map_size")
-    key_concepts_count = data.get("key_concepts_count")
+
+    # Access JSON data from the request body
+    resume_length = request.data.get("resume_length")
+    conceptual_map_size = request.data.get("conceptual_map_size")
+    key_concepts_count = request.data.get("key_concepts_count")
+
     # Trigger Celery task
     task = analyze_lesson_resources.delay(
         lesson.id,
@@ -318,7 +321,10 @@ def analyze_lesson(request, lesson_id):
         key_concepts_count=key_concepts_count,
     )
 
-    return Response({"message": "Analysis started", "task_id": task.id})
+    return Response(
+        {"message": "Analysis started", "task_id": task.id},
+        status=status.HTTP_202_ACCEPTED,
+    )
 
 
 @csrf_exempt
@@ -347,7 +353,6 @@ def key_concept_detail(request, concept_map_id):
     return Response(
         {
             "id": concept_map.id,
-            "title": concept_map.title,
             "data": concept_map.data,
             "created_at": concept_map.created_at,
             "updated_at": concept_map.updated_at,

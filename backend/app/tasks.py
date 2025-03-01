@@ -28,6 +28,7 @@ import os
 import shutil
 from django.core.files.storage import FileSystemStorage
 import json
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +154,7 @@ def analyze_lesson_resources(
         prompt = (
             f"Genera un riassunto del seguente testo in circa {resume_length} parole. "
             "Il riassunto deve essere chiaro, conciso e includere i punti principali.\n\n"
-            "Inoltre, identifica i concetti chiave del testo. Per ogni concetto, fornisci:\n"
+            f"Inoltre, identifica circa {key_concepts_count} concetti chiave del testo. Per ogni concetto, fornisci:\n"
             "- Un titolo breve e descrittivo\n"
             "- Una descrizione dettagliata\n"
             "- Un livello di importanza da 1 a 5\n"
@@ -177,13 +178,21 @@ def analyze_lesson_resources(
         )
 
         # Call Google Gemini API to generate the summary and key concepts
+        # Call Google Gemini API to generate the summary and key concepts
         response_data = generate_response_from_google(prompt)
-        response_json = json.loads(response_data["text"])  # Parse the JSON response
+        print("Raw response:", response_data)
+
+        # Clean the JSON response
+        cleaned_json = clean_json_response(response_data["text"])
+        print("Cleaned JSON:", cleaned_json)
+
+        # Parse the cleaned JSON
+        response_json = json.loads(cleaned_json)
+        print("Parsed JSON:", response_json)
 
         # Extract the summary and key concepts
         summary_text = response_json.get("summary", "Nessun riassunto generato.")
         key_concepts_data = response_json.get("key_concepts", [])
-
         # Save the summary
         User = get_user_model()  # Get the active user model dynamically
         user = User.objects.get(pk=1)  # TBD - Replace with actual user
@@ -202,11 +211,7 @@ def analyze_lesson_resources(
             KeyConcepts.objects.create(
                 user=user,
                 lesson=lesson,
-                title=concept_data.get("title", ""),
-                description=concept_data.get("description", ""),
-                importance=concept_data.get("importance", 1),
-                synonyms=", ".join(concept_data.get("synonyms", [])),
-                misconceptions=", ".join(concept_data.get("misconceptions", [])),
+                data=concept_data,
             )
 
         # Mark lesson as analyzed
@@ -217,3 +222,20 @@ def analyze_lesson_resources(
 
     except Exception as e:
         return f"Error: {e}"
+
+
+def clean_json_response(text):
+    """
+    Extracts JSON from a Markdown code block (```json ... ```).
+    If no Markdown code block is found, returns the original text.
+    """
+    # Use regex to extract the JSON part from the Markdown code block
+    match = re.search(r"```json\s*({.*})\s*```", text, re.DOTALL)
+    if match:
+        try:
+            # Return the JSON part and strip any extra whitespace
+            return match.group(1).strip()
+        except (IndexError, AttributeError):
+            # If the regex match is invalid, fallback to the original text
+            return text
+    return text  # Fallback: return the original text if no Markdown is found
