@@ -199,7 +199,7 @@ def analyze_lesson_resources(
         # Save the key concepts
         for concept_data in key_concepts_data:
             KeyConcepts.objects.create(
-                user=user
+                user=user,
                 lesson=lesson,
                 title=concept_data.get("title", ""),
                 description=concept_data.get("description", ""),
