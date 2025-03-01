@@ -74,7 +74,6 @@ def process_pdf_task(self, lesson_id, lesson_resource_id, file_path):
 
         # Update existing record OR create a new one if it doesn't exist
         monthly_usage, created = MonthlyAPIUsage.objects.get_or_create(
-            user=lesson.user,  # Assuming you want to track API usage by the user of the lesson
             service="gemini",
             month=current_month,
             year=current_year,
@@ -86,13 +85,10 @@ def process_pdf_task(self, lesson_id, lesson_resource_id, file_path):
         )
 
         # Update token counts atomically
-        MonthlyAPIUsage.objects.filter(id=monthly_usage.id).update(
+        # TBF
+        MonthlyAPIUsage.objects.filter(id=1).update(
             total_input_tokens=F("total_input_tokens") + input_tokens,
             total_output_tokens=F("total_output_tokens") + output_tokens,
-        )
-
-        logger.info(
-            f"✅ Updated monthly usage for {lesson.user.username} - {current_month}/{current_year}"
         )
 
         # 🔥 Update the existing LessonResource
