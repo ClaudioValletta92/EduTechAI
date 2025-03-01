@@ -76,27 +76,27 @@ def process_pdf_task(self, lesson_id, lesson_resource_id, file_path):
             )
 
         # 🔥 Aggregate Monthly API Usage
-        current_month = now().month
-        current_year = now().year
+        # current_month = now().month
+        # current_year = now().year
 
         # Update existing record OR create a new one if it doesn't exist
-        #monthly_usage, created = MonthlyAPIUsage.objects.get_or_create(
+        # monthly_usage, created = MonthlyAPIUsage.objects.get_or_create(
         #    service="gemini",
         #    month=current_month,
         #    year=current_year,
         #    defaults={
         #        "total_input_tokens": 0,
         #        "total_output_tokens": 0,
-         #       "total_characters_processed": 0,
+        #       "total_characters_processed": 0,
         #    },
-        #)
+        # )
 
         # Update token counts atomically
         # TBF
-        #MonthlyAPIUsage.objects.filter(id=1).update(
+        # MonthlyAPIUsage.objects.filter(id=1).update(
         #    total_input_tokens=F("total_input_tokens") + input_tokens,
         #    total_output_tokens=F("total_output_tokens") + output_tokens,
-        #)
+        # )
 
         # 🔥 Update the existing LessonResource
         with transaction.atomic():
