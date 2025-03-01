@@ -27,6 +27,7 @@ from django.conf import settings
 import os
 import shutil
 from django.core.files.storage import FileSystemStorage
+import json
 
 logger = logging.getLogger(__name__)
 

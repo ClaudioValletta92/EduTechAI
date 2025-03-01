@@ -305,9 +305,11 @@ def key_concept_lesson(request, lesson_id):
 def analyze_lesson(request, lesson_id):
     """Trigger AI analysis for a lesson's resources."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    resume_length = request.data.get("resume_length")
-    conceptual_map_size = request.data.get("conceptual_map_size")
-    key_concepts_count = request.data.get("key_concepts_count")
+    # Parse JSON data from the request body
+    data = json.loads(request.body)
+    resume_length = data.get("resume_length")
+    conceptual_map_size = data.get("conceptual_map_size")
+    key_concepts_count = data.get("key_concepts_count")
     # Trigger Celery task
     task = analyze_lesson_resources.delay(
         lesson.id,
