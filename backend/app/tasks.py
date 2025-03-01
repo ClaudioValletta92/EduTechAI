@@ -1,6 +1,13 @@
 import logging
 from celery import shared_task
-from .models import LessonResource, Lesson, MonthlyAPIUsage, ConceptMap
+from .models import (
+    LessonResource,
+    Lesson,
+    MonthlyAPIUsage,
+    ConceptMap,
+    Summary,
+    KeyConcepts,
+)
 from .utils import (
     extract_text_from_pdf,
     basic_cleaning,
@@ -100,7 +107,11 @@ def process_pdf_task(self, lesson_id, lesson_resource_id, file_path):
         logger.info(
             f"✅ Successfully updated LessonResource with ID {lesson_resource_id} for lesson {lesson_id}"
         )
-
+        if os.path.exists(file_path):  # Check if the file exists
+            os.remove(file_path)  # Delete the file
+            print(f"Deleted file: {file_path}")
+        else:
+            print(f"File not found: {file_path}")
         return {
             "status": "success",
             "message": f"Text extracted and classified as {subject}",
@@ -121,43 +132,87 @@ def process_pdf_task(self, lesson_id, lesson_resource_id, file_path):
 
 
 @shared_task
-def analyze_lesson_resources(lesson_id):
-    """AI function to analyze lesson resources and generate a conceptual map."""
-    lesson = Lesson.objects.get(id=lesson_id)
-    User = get_user_model()  # Get the active user model dynamically
-    user = User.objects.get(pk=1)
-    # Simulated AI processing (Replace with actual AI function)
-    time.sleep(5)
+def analyze_lesson_resources(
+    lesson_id, resume_length, conceptual_map_size, key_concepts_count
+):
+    """AI function to analyze lesson resources and generate a summary and key concepts."""
+    try:
+        # Retrieve the lesson
+        lesson = Lesson.objects.get(id=lesson_id)
 
-    # Example AI-generated concept map (Replace with real AI output)
-    generated_map = {
-        "nodes": [
-            {
-                "id": "1",
-                "label": "Main Topic",
-                "description": "Core idea",
-                "x_position": 100,
-                "y_position": 100,
+        # Retrieve all resources for the lesson
+        resources = LessonResource.objects.filter(lesson=lesson)
+
+        # Combine all `entry_text` fields into a single large text
+        combined_text = " ".join(
+            resource.entry_text for resource in resources if resource.entry_text
+        )
+
+        # Prepare the prompt for the Google Gemini API
+        prompt = (
+            f"Genera un riassunto del seguente testo in circa {resume_length} parole. "
+            "Il riassunto deve essere chiaro, conciso e includere i punti principali.\n\n"
+            "Inoltre, identifica i concetti chiave del testo. Per ogni concetto, fornisci:\n"
+            "- Un titolo breve e descrittivo\n"
+            "- Una descrizione dettagliata\n"
+            "- Un livello di importanza da 1 a 5\n"
+            "- Sinonimi rilevanti\n"
+            "- Errori comuni o idee sbagliate associate al concetto\n\n"
+            "Restituisci la risposta in formato JSON con la seguente struttura:\n"
+            "{\n"
+            '  "summary": "Il riassunto generato",\n'
+            '  "key_concepts": [\n'
+            "    {\n"
+            '      "id": 1,\n'
+            '      "title": "Titolo del concetto",\n'
+            '      "description": "Descrizione del concetto",\n'
+            '      "importance": 5,\n'
+            '      "synonyms": ["Sinonimo 1", "Sinonimo 2"],\n'
+            '      "misconceptions": ["Errore comune 1", "Errore comune 2"]\n'
+            "    }\n"
+            "  ]\n"
+            "}\n\n"
+            f"Testo:\n{combined_text}"
+        )
+
+        # Call Google Gemini API to generate the summary and key concepts
+        response_data = generate_response_from_google(prompt)
+        response_json = json.loads(response_data["text"])  # Parse the JSON response
+
+        # Extract the summary and key concepts
+        summary_text = response_json.get("summary", "Nessun riassunto generato.")
+        key_concepts_data = response_json.get("key_concepts", [])
+
+        # Save the summary
+        User = get_user_model()  # Get the active user model dynamically
+        user = User.objects.get(pk=1)  # TBD - Replace with actual user
+        summary, created = Summary.objects.get_or_create(
+            lesson=lesson,
+            defaults={
+                "user": user,
+                "title": f"Summary for Lesson {lesson_id}",
+                "content": summary_text,  # Store the generated summary
             },
-            {
-                "id": "2",
-                "label": "Subtopic A",
-                "description": "Related concept",
-                "x_position": 300,
-                "y_position": 200,
-            },
-        ],
-        "edges": [{"id": "e1-2", "source": "1", "target": "2"}],
-    }
+        )
+        summary.save()
 
-    # Save or update the conceptual map
-    concept_map, created = ConceptMap.objects.get_or_create(
-        lesson=lesson, data=generated_map, user=user
-    )
-    concept_map.save()
+        # Save the key concepts
+        for concept_data in key_concepts_data:
+            KeyConcepts.objects.create(
+                user=user
+                lesson=lesson,
+                title=concept_data.get("title", ""),
+                description=concept_data.get("description", ""),
+                importance=concept_data.get("importance", 1),
+                synonyms=", ".join(concept_data.get("synonyms", [])),
+                misconceptions=", ".join(concept_data.get("misconceptions", [])),
+            )
 
-    # Mark lesson as analyzed
-    lesson.analyzed = True
-    lesson.save()
+        # Mark lesson as analyzed
+        lesson.analyzed = True
+        lesson.save()
 
-    return f"Concept map for Lesson {lesson_id} updated!"
+        return f"Summary and key concepts for Lesson {lesson_id} created successfully."
+
+    except Exception as e:
+        return f"Error: {e}"

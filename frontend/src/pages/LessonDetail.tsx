@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams,useLocation} from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import UploadSection from "../components/UploadSection";
 import ResourceItem from "../components/ResourceItem";
 import { Link } from "react-router-dom";
-
+import Modal from "../components/Modal"; // Import the Modal component
 
 function LessonDetail() {
   const { lessonId } = useParams<{ lessonId: string }>();
@@ -15,14 +15,15 @@ function LessonDetail() {
   const [keyConcepts, setKeyConcepts] = useState<{ title: string } | null>(
     null
   );
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const location = useLocation();
-  const project = location.state?.project; // ✅ Retrieve project from location state
+  const project = location.state?.project;
+
   useEffect(() => {
     // Fetch lesson details
     fetch(`http://localhost:8000/api/lessons/${lessonId}/`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("Lesson details:", data); // ✅ Debugging log
         setAnalyzed(data.analyzed);
       })
       .catch((error) => console.error("Error fetching lesson details:", error));
@@ -31,33 +32,22 @@ function LessonDetail() {
     fetch(`http://localhost:8000/api/lessons/${lessonId}/resources`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("Lesson resources:", data); // ✅ Debugging log
         setResources(data.resources);
       })
       .catch((error) => console.error("Error fetching resources:", error));
 
     // Fetch conceptual map if the lesson is analyzed
     if (analyzed) {
-      console.log("Fetching conceptual map for lesson:", lessonId); // ✅ Debugging log
       fetch(`http://localhost:8000/api/lessons/${lessonId}/concept-map/`)
-        .then((res) => {
-          console.log("Concept Map Response Status:", res.status); // ✅ Debugging log
-          return res.json();
-        })
+        .then((res) => res.json())
         .then((data) => {
-          console.log("Concept Map Data:", data); // ✅ Debugging log
           setConceptMap(data);
         })
         .catch((error) => console.error("Error fetching concept map:", error));
 
-      console.log("Fetching key concepts for lesson:", lessonId); // ✅ Debugging log
       fetch(`http://localhost:8000/api/lessons/${lessonId}/key-concept/`)
-        .then((res) => {
-          console.log("Key concepts Response Status:", res.status); // ✅ Debugging log
-          return res.json();
-        })
+        .then((res) => res.json())
         .then((data) => {
-          console.log("Concept Map Data:", data); // ✅ Debugging log
           setKeyConcepts(data);
         })
         .catch((error) => console.error("Error fetching key concepts:", error));
@@ -65,12 +55,101 @@ function LessonDetail() {
   }, [lessonId, analyzed]);
 
   const handleAnalyze = () => {
-    fetch(`http://localhost:8000/api/lessons/${lessonId}/analyze/`, {
-      method: "POST",
-    })
-      .then((res) => res.json())
-      .then(() => setAnalyzed(true))
-      .catch((error) => console.error("Error analyzing lesson:", error));
+    setIsModalOpen(true);
+  };
+
+  const ModalContent = ({ onClose }) => {
+    const [resumeLength, setResumeLength] = useState("");
+    const [conceptualMapSize, setConceptualMapSize] = useState("");
+    const [keyConceptsCount, setKeyConceptsCount] = useState("");
+
+    const handleSubmit = () => {
+      fetch(`http://localhost:8000/api/lessons/${lessonId}/analyze/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          resume_length: resumeLength,
+          conceptual_map_size: conceptualMapSize,
+          key_concepts_count: keyConceptsCount,
+        }),
+      })
+        .then((res) => res.json())
+        .then(() => {
+          setAnalyzed(true);
+          onClose();
+        })
+        .catch((error) => console.error("Error analyzing lesson:", error));
+    };
+
+    return (
+      <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">
+          Analyze Lesson
+        </h2>
+
+        <div className="mb-4">
+          <label className="block text-gray-600 text-sm font-medium mb-2">
+            Length of the resume (words approx.):
+          </label>
+          <input
+            type="number"
+            value={resumeLength}
+            onChange={(e) => setResumeLength(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            placeholder="Enter number of words"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-600 text-sm font-medium mb-2">
+            Conceptual Map Size:
+          </label>
+          <select
+            value={conceptualMapSize}
+            onChange={(e) => setConceptualMapSize(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          >
+            <option value="">Select size</option>
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-600 text-sm font-medium mb-2">
+            Key Concepts:
+          </label>
+          <select
+            value={keyConceptsCount}
+            onChange={(e) => setKeyConceptsCount(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          >
+            <option value="">Select range</option>
+            <option value="5-7">5-7</option>
+            <option value="9-12">9-12</option>
+            <option value="13-16">13-16</option>
+          </select>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Submit
+          </button>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -86,13 +165,15 @@ function LessonDetail() {
     >
       {/* Dark overlay for readability */}
       <div className="absolute inset-0 bg-black opacity-40"></div>
-  
+
       <div className="relative z-10 flex flex-1">
         <Sidebar />
-  
+
         <main className="flex-1 p-6 bg-white bg-opacity-90 rounded-lg shadow-lg mx-4 my-6">
-          <h2 className="text-3xl font-bold text-gray-900">Lesson {lessonId}</h2>
-  
+          <h2 className="text-3xl font-bold text-gray-900">
+            Lesson {lessonId}
+          </h2>
+
           {/* Upload Section - Disabled if analyzed */}
           {!analyzed ? (
             <UploadSection lessonId={parseInt(lessonId)} />
@@ -101,7 +182,7 @@ function LessonDetail() {
               This lesson has been analyzed. No new resources can be added.
             </p>
           )}
-  
+
           {/* Analyze Button */}
           {!analyzed && resources.length > 0 && (
             <button
@@ -111,7 +192,7 @@ function LessonDetail() {
               Analyze Lesson
             </button>
           )}
-  
+
           {/* Resources Section */}
           <div className="mt-6">
             <h3 className="text-2xl font-semibold text-gray-800">Resources</h3>
@@ -125,17 +206,17 @@ function LessonDetail() {
               <p className="text-gray-600 mt-2">No resources available.</p>
             )}
           </div>
-  
+
           {/* Analysis Section */}
           {analyzed && (
             <div className="mt-8 p-6 bg-gray-100 rounded-lg shadow-md">
               <h3 className="text-2xl font-semibold text-gray-800">Analysis</h3>
-  
+
               <div className="mt-4">
                 <h4 className="text-lg font-semibold">📄 Summary</h4>
                 <p>Summary will be generated here.</p>
               </div>
-  
+
               <div className="mt-4">
                 <h4 className="text-lg font-semibold">🔑 Key Concepts</h4>
                 {keyConcepts ? (
@@ -149,12 +230,12 @@ function LessonDetail() {
                   <p>No key concepts available.</p>
                 )}
               </div>
-  
+
               <div className="mt-4">
                 <h4 className="text-lg font-semibold">🎧 Audio</h4>
                 <p>Audio playback will be available here.</p>
               </div>
-  
+
               <div className="mt-4">
                 <h4 className="text-lg font-semibold">🗺️ Conceptual Map</h4>
                 {conceptMap ? (
@@ -172,9 +253,13 @@ function LessonDetail() {
           )}
         </main>
       </div>
+
+      {/* Modal */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <ModalContent onClose={() => setIsModalOpen(false)} />
+      </Modal>
     </div>
   );
-  
 }
 
 export default LessonDetail;

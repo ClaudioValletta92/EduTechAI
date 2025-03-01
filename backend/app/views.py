@@ -43,6 +43,7 @@ User = get_user_model()
 
 MEDIA_DIR = "/app/media/uploads"  # ✅ Shared directory inside the container
 
+
 @csrf_exempt
 def upload_pdf(request, lesson_id):
     """Handles PDF uploads and ensures the file is saved correctly."""
@@ -85,7 +86,7 @@ def upload_pdf(request, lesson_id):
             for chunk in file.chunks():
                 f.write(chunk)
 
-        process_pdf_task.delay(lesson_id, lesson_resource_id,file_path)
+        process_pdf_task.delay(lesson_id, lesson_resource_id, file_path)
 
         return JsonResponse(
             {
@@ -304,9 +305,16 @@ def key_concept_lesson(request, lesson_id):
 def analyze_lesson(request, lesson_id):
     """Trigger AI analysis for a lesson's resources."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
-
+    resume_length = request.data.get("resume_length")
+    conceptual_map_size = request.data.get("conceptual_map_size")
+    key_concepts_count = request.data.get("key_concepts_count")
     # Trigger Celery task
-    task = analyze_lesson_resources.delay(lesson.id)
+    task = analyze_lesson_resources.delay(
+        lesson.id,
+        resume_length=resume_length,
+        conceptual_map_size=conceptual_map_size,
+        key_concepts_count=key_concepts_count,
+    )
 
     return Response({"message": "Analysis started", "task_id": task.id})
 
