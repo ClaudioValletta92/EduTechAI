@@ -234,6 +234,14 @@ class Summary(models.Model):
     lesson = models.OneToOneField(  # Each lesson has ONE summary
         "Lesson", on_delete=models.CASCADE, related_name="summary"
     )
+    word_count = models.PositiveIntegerField(default=0)  # New field to store word count
 
     def __str__(self):
         return f"Summary: {self.title} (by {self.user.username})"
+
+    def save(self, *args, **kwargs):
+        # Calculate word count based on content
+        self.word_count = len(
+            self.content.split()
+        )  # Split content into words and count them
+        super().save(*args, **kwargs)  # Call the parent class's save method

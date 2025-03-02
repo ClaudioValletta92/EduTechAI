@@ -277,29 +277,32 @@ def lesson_concept_map(request, lesson_id):
 @csrf_exempt
 @api_view(["GET"])
 def key_concept_lesson(request, lesson_id):
-    """Retrieve or create/update a conceptual map for a lesson."""
+    """Retrieve the key concepts for a lesson."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    default_user = User.objects.get(pk=1)
-    if request.method == "GET":
-        # Fetch or create the conceptual map
-        concept_map, created = KeyConcepts.objects.get_or_create(
-            lesson=lesson,
-            defaults={
-                "data": {},
-                "user": default_user,
-            },
-        )
 
-        # Return the whole concept map object
-        return Response(
+    if request.method == "GET":
+        # Fetch all KeyConcepts for the lesson
+        key_concepts = KeyConcepts.objects.filter(lesson=lesson)
+
+        # If no KeyConcepts are found, return a message
+        if not key_concepts.exists():
+            return Response(
+                {"message": "No key concepts found for this lesson."}, status=404
+            )
+
+        # Return the list of key concepts
+        key_concepts_data = [
             {
-                "id": concept_map.id,
+                "id": key_concept.id,
                 "lesson": lesson.title,
-                "data": concept_map.data,
-                "created_at": concept_map.created_at,
-                "updated_at": concept_map.updated_at,
+                "data": key_concept.data,
+                "created_at": key_concept.created_at,
+                "updated_at": key_concept.updated_at,
             }
-        )
+            for key_concept in key_concepts
+        ]
+
+        return Response(key_concepts_data)
 
 
 @csrf_exempt
@@ -379,29 +382,32 @@ def lesson_detail(request, lesson_id):
 @csrf_exempt
 @api_view(["GET"])
 def summaries_lesson(request, lesson_id):
-    """Retrieve or create/update a conceptual map for a lesson."""
+    """Retrieve all summaries for a lesson."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
 
     if request.method == "GET":
-        # Fetch or create the conceptual map
-        summaries, created = Summary.objects.get_or_create(
-            lesson=lesson,
-            defaults={
-                "title": f"Key Concepts for {lesson.title}",
-                "text": "default",
-            },
-        )
+        # Fetch all summaries for the lesson
+        summaries = Summary.objects.filter(lesson=lesson)
 
-        # Return the whole concept map object
+        # If no summaries exist, return a 404 message
+        if not summaries.exists():
+            return Response(
+                {"message": "No summaries found for this lesson."}, status=404
+            )
+
+        # Return a list of summaries
         return Response(
-            {
-                "id": summaries.id,
-                "title": summaries.title,
-                "lesson": lesson.lesson,
-                "content": summaries.content,
-                "created_at": summaries.created_at,
-                "updated_at": summaries.updated_at,
-            }
+            [
+                {
+                    "id": summary.id,
+                    "title": summary.title,
+                    "lesson": lesson.title,
+                    "content": summary.content,
+                    "created_at": summary.created_at,
+                    "updated_at": summary.updated_at,
+                }
+                for summary in summaries
+            ]
         )
 
 

@@ -6,15 +6,33 @@ import UploadSection from "../components/UploadSection";
 import ResourceItem from "../components/ResourceItem";
 import { Link } from "react-router-dom";
 import Modal from "../components/Modal"; // Import the Modal component
+import KeyConceptsList from "../components/KeyConceptsList";
+import SummaryList from "../components/SummaryList";
+interface KeyConcept {
+  id: number;
+  title: string;
+  description: string;
+  importance: number;
+  synonyms: string[];
+  misconceptions: string[];
+}
+interface Summary {
+  id: number;
+  title: string;
+  content: string;
+  created_at: string; // ISO string format (date and time)
+  updated_at: string; // ISO string format (date and time)
+  word_count: number;
+}
 
 function LessonDetail() {
   const { lessonId } = useParams<{ lessonId: string }>();
   const [resources, setResources] = useState([]);
   const [analyzed, setAnalyzed] = useState(false);
   const [conceptMap, setConceptMap] = useState<{ title: string } | null>(null);
-  const [keyConcepts, setKeyConcepts] = useState<{ title: string } | null>(
-    null
-  );
+  const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]);
+  const [summaries, setSummaries] = useState<Summary[]>([]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const location = useLocation();
   const project = location.state?.project;
@@ -45,10 +63,21 @@ function LessonDetail() {
         })
         .catch((error) => console.error("Error fetching concept map:", error));
 
+      fetch(`http://localhost:8000/api/lessons/${lessonId}/summaries/`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Summaries:");
+          console.log(data);
+          setSummaries(data); // Assuming API returns an array
+        })
+        .catch((error) => console.error("Error fetching summaries:", error));
+
       fetch(`http://localhost:8000/api/lessons/${lessonId}/key-concept/`)
         .then((res) => res.json())
         .then((data) => {
-          setKeyConcepts(data);
+          console.log("Summaries:");
+          console.log(data);
+          setKeyConcepts(data); // Assuming API returns an array
         })
         .catch((error) => console.error("Error fetching key concepts:", error));
     }
@@ -122,16 +151,15 @@ function LessonDetail() {
           <label className="block text-gray-600 text-sm font-medium mb-2">
             Key Concepts:
           </label>
-          <select
+          <input
+            type="number"
             value={keyConceptsCount}
             onChange={(e) => setKeyConceptsCount(e.target.value)}
+            min="1" // Minimum value
+            max="20" // Maximum value (adjust as needed)
             className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-          >
-            <option value="">Select range</option>
-            <option value="5-7">5-7</option>
-            <option value="9-12">9-12</option>
-            <option value="13-16">13-16</option>
-          </select>
+            placeholder="Enter a number"
+          />
         </div>
 
         <div className="flex justify-end gap-2">
@@ -214,18 +242,15 @@ function LessonDetail() {
 
               <div className="mt-4">
                 <h4 className="text-lg font-semibold">📄 Summary</h4>
-                <p>Summary will be generated here.</p>
+                <SummaryList summaries={summaries} />
               </div>
 
               <div className="mt-4">
                 <h4 className="text-lg font-semibold">🔑 Key Concepts</h4>
-                {keyConcepts ? (
-                  <Link
-                    to={`/key-concepts/${keyConcepts.id}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {keyConcepts.title} 🔗
-                  </Link>
+                {keyConcepts.length > 0 ? (
+                  <div className="overflow-x-auto flex space-x-4 p-2">
+                    <KeyConceptsList keyConcepts={keyConcepts} />
+                  </div>
                 ) : (
                   <p>No key concepts available.</p>
                 )}
