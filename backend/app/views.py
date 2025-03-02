@@ -405,6 +405,7 @@ def summaries_lesson(request, lesson_id):
                     "content": summary.content,
                     "created_at": summary.created_at,
                     "updated_at": summary.updated_at,
+                    "word_count": summary.word_count,
                 }
                 for summary in summaries
             ]

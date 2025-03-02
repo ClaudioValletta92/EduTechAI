@@ -152,7 +152,7 @@ def analyze_lesson_resources(
 
         # Prepare the prompt for the Google Gemini API
         prompt = (
-            f"Genera un riassunto del seguente testo in circa {resume_length} parole. "
+            f"Genera un riassunto del seguente testo in circa {resume_length} parole. Parole, non caratteri. "
             "Il riassunto deve essere chiaro, conciso e includere i punti principali.\n\n"
             f"Inoltre, identifica circa {key_concepts_count} concetti chiave del testo. Per ogni concetto, fornisci:\n"
             "- Un titolo breve e descrittivo\n"
