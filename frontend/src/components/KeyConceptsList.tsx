@@ -15,6 +15,7 @@ interface KeyConceptsListProps {
 }
 
 const KeyConceptsList: React.FC<KeyConceptsListProps> = ({ keyConcepts }) => {
+  console.log("Key Concepts Data in list component", keyConcepts); // Debugging
   if (keyConcepts.length === 0) {
     return <p className="text-gray-500">No key concepts available.</p>;
   }
@@ -24,13 +25,13 @@ const KeyConceptsList: React.FC<KeyConceptsListProps> = ({ keyConcepts }) => {
       {keyConcepts
         .sort((a, b) => b.importance - a.importance) // Sort by importance
         .map((concept) => (
-          <div key={concept.id} className="min-w-[250px]">
+          <div key={concept.id} className="min-w-[250px] min-h-[300px]">
             <Card
-              title={concept.title}
-              description={concept.description}
-              importance={concept.importance}
-              synonyms={concept.synonyms}
-              misconceptions={concept.misconceptions}
+              title={concept.data.title}
+              description={concept.data.description}
+              importance={concept.data.importance}
+              synonyms={concept.data.synonyms}
+              misconceptions={concept.data.misconceptions}
             />
           </div>
         ))}
