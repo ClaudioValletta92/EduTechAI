@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Modal from "../components/Modal";
+import { Plus } from "lucide-react"; // Import the Plus icon
 
 function ProjectDetail({ project, onBack }) {
   const [lessons, setLessons] = useState([]);
@@ -98,15 +99,9 @@ function ProjectDetail({ project, onBack }) {
           </h2>
         </div>
 
-        <button
-          onClick={handleAddLessonClick}
-          className="mb-4 text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2 transition-all"
-        >
-          ➕ Add Lesson
-        </button>
-
         {/* Lessons List */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {/* Render Lessons */}
           {lessons.map((lesson) => (
             <div
               key={lesson.pk}
@@ -121,6 +116,15 @@ function ProjectDetail({ project, onBack }) {
               </Link>
             </div>
           ))}
+
+          {/* Add New Lesson Button (placed after the lessons) */}
+          <button
+            onClick={handleAddLessonClick}
+            className="flex items-center justify-center bg-white p-4 border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition-all text-gray-700 hover:text-blue-600"
+          >
+            <Plus className="w-6 h-6 mr-2" />
+            <span>Crea Nuova Lezione</span>
+          </button>
         </div>
 
         {/* Modal for Adding a New Lesson */}
