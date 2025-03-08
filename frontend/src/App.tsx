@@ -9,8 +9,7 @@ function App() {
   const [selectedProject, setSelectedProject] = useState(null);
 
   return (
-    <div className="flex flex-col h-screen">
-
+    <div className="flex flex-col h-screen bg-[#1d2125]">
       <div className="flex flex-1">
         <Sidebar />
 

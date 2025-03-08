@@ -1,14 +1,13 @@
-// src/components/Sidebar.tsx
 import React from "react";
-import { Link } from "react-router-dom"; // using React Router for navigation
-import AddProjectButton from "./AddProjectButton"; // adjust the path if needed
+import { Link } from "react-router-dom";
+import { Home, User, Settings, HelpCircle } from "lucide-react"; // Import icons
 
 function Sidebar() {
-  // Inline styles (you can replace these with your CSS)
   const sidebarStyle: React.CSSProperties = {
     width: "200px",
-    background: "#eee",
+    background: "#1d2125",
     padding: "1rem",
+    color: "#adbbc4", // Text color
   };
 
   const navListStyle: React.CSSProperties = {
@@ -16,28 +15,66 @@ function Sidebar() {
     padding: 0,
   };
 
+  const linkStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    color: "#adbbc4",
+    textDecoration: "none",
+    padding: "8px 0",
+  };
+
   return (
     <aside style={sidebarStyle}>
-      <h3>Menu</h3>
       <ul style={navListStyle}>
         <li>
-          <Link to="/">Home</Link>
+          <Link to="/" style={linkStyle}>
+            <Home size={18} color="#adbbc4" /> Home
+          </Link>
         </li>
         <li>
-          <Link to="/upload">Upload</Link>
-        </li>
-        <li>
-          <Link to="/profile">Profile</Link>
+          <Link to="/profile" style={linkStyle}>
+            <User size={18} color="#adbbc4" /> Profile
+          </Link>
         </li>
       </ul>
-      <hr />
-      {/* Reusable AddProjectButton component */}
-      <button style={{ display: "block", marginTop: "1rem" }}>Settings</button>
-      <button style={{ display: "block", marginTop: "0.5rem" }}>Help</button>
-      <hr />
-      Your last opened things
-      {/* AddProjectButton component */}
-      {/* Existing sidebar buttons */}
+
+      <button
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          marginTop: "1rem",
+          background: "none",
+          border: "none",
+          color: "#adbbc4",
+          cursor: "pointer",
+        }}
+      >
+        <Settings size={18} color="#adbbc4" /> Settings
+      </button>
+
+      <button
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          marginTop: "0.5rem",
+          background: "none",
+          border: "none",
+          color: "#adbbc4",
+          cursor: "pointer",
+        }}
+      >
+        <HelpCircle size={18} color="#adbbc4" /> Help
+      </button>
+
+      <hr
+        style={{
+          marginTop: "1.5rem",
+        }}
+      />
+      <p>Recent</p>
     </aside>
   );
 }

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Modal from "./Modal";
+import { PlusCircle } from "lucide-react"; // Correct import for Lucide icons
 
-function AddProjectButton({ onProjectCreated }) {
+function AddProjectCard({ onProjectCreated }) {
   const [showForm, setShowForm] = useState(false);
   const [project, setProject] = useState({
     title: "",
@@ -19,7 +20,9 @@ function AddProjectButton({ onProjectCreated }) {
 
   const fetchBackgroundImages = async () => {
     try {
-      const response = await fetch("http://localhost:8000/api/available-backgrounds/");
+      const response = await fetch(
+        "http://localhost:8000/api/available-backgrounds/"
+      );
       if (response.ok) {
         const data = await response.json();
         const presets = data.filter((image) => image.type === "preset");
@@ -43,7 +46,7 @@ function AddProjectButton({ onProjectCreated }) {
     try {
       // Check if the selected background is preset or blended
       const background = project.backgroundPreset || project.backgroundBlended;
-  
+
       const response = await fetch("http://localhost:8000/api/projects/", {
         method: "POST",
         headers: {
@@ -52,17 +55,17 @@ function AddProjectButton({ onProjectCreated }) {
         body: JSON.stringify({
           title: project.title,
           description: project.description,
-          background: background,  // Add the selected background image (preset or blended)
+          background: background, // Add the selected background image (preset or blended)
         }),
       });
-      
+
       if (response.ok) {
         alert("Project created successfully!");
         setProject({
           title: "",
           description: "",
-          backgroundPreset: "",  // Reset selected preset background
-          backgroundBlended: "",  // Reset selected blended background
+          backgroundPreset: "", // Reset selected preset background
+          backgroundBlended: "", // Reset selected blended background
         });
         setShowForm(false);
         if (onProjectCreated) {
@@ -77,7 +80,6 @@ function AddProjectButton({ onProjectCreated }) {
       alert("There was an error creating the project.");
     }
   };
-  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,20 +91,25 @@ function AddProjectButton({ onProjectCreated }) {
   };
 
   return (
-    <div>
-      <button
-        onClick={handleAddProjectClick}
-        className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-all"
+    <>
+      <div
+        className="relative border border-dashed border-gray-400 rounded-lg p-4 bg-white shadow-md cursor-pointer hover:bg-gray-100 transition-all duration-300 flex flex-col items-center justify-center min-h-[300px]"
+        onClick={() => setShowForm(true)}
       >
-        Add Project
-      </button>
-
+        <PlusCircle className="h-12 w-12 text-gray-500" />
+        <p className="mt-2 text-gray-600 font-semibold">
+          Crea nuovo spazio di lavoro
+        </p>
+      </div>
       <Modal isOpen={showForm} onClose={() => setShowForm(false)}>
         <div className="modal-content max-h-[90vh] overflow-y-auto p-4">
           <h2 className="text-2xl font-semibold mb-4">Create New Project</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="title" className="block font-medium text-gray-700">
+              <label
+                htmlFor="title"
+                className="block font-medium text-gray-700"
+              >
                 Title:
               </label>
               <input
@@ -116,7 +123,10 @@ function AddProjectButton({ onProjectCreated }) {
               />
             </div>
             <div>
-              <label htmlFor="description" className="block font-medium text-gray-700">
+              <label
+                htmlFor="description"
+                className="block font-medium text-gray-700"
+              >
                 Description:
               </label>
               <textarea
@@ -131,7 +141,10 @@ function AddProjectButton({ onProjectCreated }) {
 
             {/* Preset Images Section */}
             <div>
-              <label htmlFor="backgroundPreset" className="block font-medium text-gray-700">
+              <label
+                htmlFor="backgroundPreset"
+                className="block font-medium text-gray-700"
+              >
                 Preset Background Images:
               </label>
               <div className="max-h-48 overflow-y-auto mt-2 grid grid-cols-3 gap-4">
@@ -145,7 +158,9 @@ function AddProjectButton({ onProjectCreated }) {
                       src={`http://localhost:8000${image.image_url}`}
                       alt={image.name}
                       className={`w-32 h-32 object-cover rounded-md transition-all duration-200 ${
-                        project.backgroundPreset === image.name ? "border-4 border-blue-500" : ""
+                        project.backgroundPreset === image.name
+                          ? "border-4 border-blue-500"
+                          : ""
                       }`}
                     />
                   </div>
@@ -155,7 +170,10 @@ function AddProjectButton({ onProjectCreated }) {
 
             {/* Blended Images Section */}
             <div>
-              <label htmlFor="backgroundPreset" className="block font-medium text-gray-700">
+              <label
+                htmlFor="backgroundPreset"
+                className="block font-medium text-gray-700"
+              >
                 Blended Background Images:
               </label>
               <div className="max-h-48 overflow-y-auto mt-2 grid grid-cols-3 gap-4">
@@ -169,7 +187,9 @@ function AddProjectButton({ onProjectCreated }) {
                       src={`http://localhost:8000${image.image_url}`}
                       alt={image.name}
                       className={`w-32 h-32 object-cover rounded-md transition-all duration-200 ${
-                        project.backgroundPreset === image.name ? "border-4 border-blue-500" : ""
+                        project.backgroundPreset === image.name
+                          ? "border-4 border-blue-500"
+                          : ""
                       }`}
                     />
                   </div>
@@ -195,8 +215,8 @@ function AddProjectButton({ onProjectCreated }) {
           </form>
         </div>
       </Modal>
-    </div>
+    </>
   );
 }
 
-export default AddProjectButton;
+export default AddProjectCard;

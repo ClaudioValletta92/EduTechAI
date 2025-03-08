@@ -70,6 +70,7 @@ function ProjectDetail({ project, onBack }) {
           : "none",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        borderLeft: "1px solid #adbbc4", // Add this line for the left border
       }}
     >
       {/* Dark overlay for background image */}
@@ -92,7 +93,9 @@ function ProjectDetail({ project, onBack }) {
             zIndex: 10,
           }}
         >
-          <h2 className="text-3xl font-semibold">{project.fields.title} - Lessons</h2>
+          <h2 className="text-3xl font-semibold">
+            {project.fields.title} - Lessons
+          </h2>
         </div>
 
         <button
@@ -109,14 +112,13 @@ function ProjectDetail({ project, onBack }) {
               key={lesson.pk}
               className="bg-white p-4 border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition-all"
             >
-<Link
-  to={`/lessons/${lesson.pk}`}
-  state={{ project }} // ✅ Pass the project as state
-  className="block text-blue-600 hover:text-blue-800 transition-all"
->
-  <h3 className="text-lg font-semibold">{lesson.fields.title}</h3>
-</Link>
-
+              <Link
+                to={`/lessons/${lesson.pk}`}
+                state={{ project }} // ✅ Pass the project as state
+                className="block text-blue-600 hover:text-blue-800 transition-all"
+              >
+                <h3 className="text-lg font-semibold">{lesson.fields.title}</h3>
+              </Link>
             </div>
           ))}
         </div>
@@ -126,7 +128,10 @@ function ProjectDetail({ project, onBack }) {
           <h2 className="text-2xl font-semibold mb-4">Add New Lesson</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="title" className="block font-medium text-gray-700">
+              <label
+                htmlFor="title"
+                className="block font-medium text-gray-700"
+              >
                 Lesson Title:
               </label>
               <input
