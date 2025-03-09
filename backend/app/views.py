@@ -462,8 +462,22 @@ def tables_for_lesson(request, lesson_id):
         return Response(tables_data)
 
 
+from django.contrib import messages
+
+
+@csrf_exempt
 def fetch_user_profile(request):
+    messages.debug(request, "This is a debug message.")
+    messages.info(request, "This is an info message.")
+    messages.success(request, "This is a success message.")
+    messages.warning(request, "This is a warning message.")
+    messages.error(request, "This is an error message.")
+    logger.debug("This is a debug message.")
     user = request.user
+
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "User is not authenticated"}, status=401)
+
     profile_data = {
         "username": user.username,
         "age": user.age,

@@ -12,8 +12,9 @@ function ProfilePage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch("/api/user/profile");
+        const response = await fetch("http://localhost:8000/api/user/profile");
         const data = await response.json();
+        console.log("User data:", data);
         setUsername(data.username);
         setAge(data.age);
         setSchool(data.school);
@@ -33,20 +34,23 @@ function ProfilePage() {
     e.preventDefault();
 
     try {
-      const response = await fetch("/api/user/profile/update", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username,
-          age,
-          school,
-          work_duration: workDuration,
-          rest_duration: restDuration,
-          theme, // Include theme in the update
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:8000/api/user/profile/update",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            age,
+            school,
+            work_duration: workDuration,
+            rest_duration: restDuration,
+            theme, // Include theme in the update
+          }),
+        }
+      );
 
       if (response.ok) {
         alert("Profile updated successfully!");
