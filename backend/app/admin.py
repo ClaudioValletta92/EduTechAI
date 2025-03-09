@@ -8,7 +8,8 @@ from .models import (
     ConceptMap,
     KeyConcepts,
     Summary,
-    BackgroundImage
+    BackgroundImage,
+    Table,
 )
 
 admin.site.register(CustomUser)
@@ -20,3 +21,4 @@ admin.site.register(ConceptMap)
 admin.site.register(KeyConcepts)
 admin.site.register(Summary)
 admin.site.register(BackgroundImage)
+admin.site.register(Table)

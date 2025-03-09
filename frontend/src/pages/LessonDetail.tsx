@@ -8,6 +8,10 @@ import { Link } from "react-router-dom";
 import Modal from "../components/Modal"; // Import the Modal component
 import KeyConceptsList from "../components/KeyConceptsList";
 import SummaryList from "../components/SummaryList";
+import { Plus } from "lucide-react"; // Import the Plus icon
+import TablesList from "../components/TablesList";
+import ConceptMapView from "../components/ConceptMapView";
+
 interface KeyConcept {
   id: number;
   title: string;
@@ -16,22 +20,80 @@ interface KeyConcept {
   synonyms: string[];
   misconceptions: string[];
 }
-interface Summary {
+interface FetchedSummary {
   id: number;
   title: string;
-  content: string;
-  created_at: string; // ISO string format (date and time)
-  updated_at: string; // ISO string format (date and time)
-  word_count: number;
+  content: Array<{ id: number; title: string; summary: string }>;
+  created_at: string;
+  updated_at: string;
+  lesson: string;
+}
+interface Lesson {
+  id: number;
+  title: string;
+  description: string;
+  created_at: string;
+  analyzed: boolean;
 }
 
 function LessonDetail() {
+  const nodes = [
+    {
+      id: "1",
+      type: "customNode",
+      data: { title: "Main Topic", text: "Some details about Main Topic." },
+      position: { x: 250, y: 50 },
+    },
+    {
+      id: "2",
+      type: "customNode",
+      data: { title: "Subtopic A", text: "Explanatory text for Subtopic A." },
+      position: { x: 100, y: 200 },
+    },
+    {
+      id: "3",
+      type: "customNode",
+      data: { title: "Subtopic B", text: "Explanatory text for Subtopic B." },
+      position: { x: 400, y: 200 },
+    },
+    {
+      id: "4",
+      type: "annotationNode",
+      data: {
+        level: "1",
+        label: "An example annotation",
+        arrowStyle: { color: "red" },
+      },
+      position: { x: 150, y: 400 },
+    },
+  ];
+
+  const edges = [
+    {
+      id: "1",
+      source: "1",
+      target: "2",
+      label: "Edge to Subtopic A",
+      type: "smoothstep",
+    },
+    {
+      id: "2",
+      source: "1",
+      target: "3",
+      label: "Edge to Subtopic B",
+      type: "smoothstep",
+    },
+  ];
   const { lessonId } = useParams<{ lessonId: string }>();
+  const [lesson, setLesson] = useState<Lesson | null>(null);
   const [resources, setResources] = useState([]);
   const [analyzed, setAnalyzed] = useState(false);
   const [conceptMap, setConceptMap] = useState<{ title: string } | null>(null);
   const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]);
-  const [summaries, setSummaries] = useState<Summary[]>([]);
+  const [summary, setSummary] = useState<FetchedSummary | null>(null); // Initialize as null
+  const [tables, setTables] = useState<
+    Array<{ id: number; title: string; data: Array<{ [key: string]: any }> }>
+  >([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const location = useLocation();
@@ -42,6 +104,7 @@ function LessonDetail() {
     fetch(`http://localhost:8000/api/lessons/${lessonId}/`)
       .then((res) => res.json())
       .then((data) => {
+        setLesson(data);
         setAnalyzed(data.analyzed);
       })
       .catch((error) => console.error("Error fetching lesson details:", error));
@@ -68,18 +131,27 @@ function LessonDetail() {
         .then((data) => {
           console.log("Summaries:");
           console.log(data);
-          setSummaries(data); // Assuming API returns an array
+          setSummary(data); // Set the fetched data to state
         })
         .catch((error) => console.error("Error fetching summaries:", error));
 
       fetch(`http://localhost:8000/api/lessons/${lessonId}/key-concept/`)
         .then((res) => res.json())
         .then((data) => {
-          console.log("Summaries:");
+          console.log("Key concepts:");
           console.log(data);
           setKeyConcepts(data); // Assuming API returns an array
         })
         .catch((error) => console.error("Error fetching key concepts:", error));
+
+      fetch(`http://localhost:8000/api/lessons/${lessonId}/tables/`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Tables:");
+          console.log(data);
+          setTables(data);
+        })
+        .catch((error) => console.error("Error fetching tables:", error));
     }
   }, [lessonId, analyzed]);
 
@@ -149,7 +221,7 @@ function LessonDetail() {
 
         <div className="mb-4">
           <label className="block text-gray-600 text-sm font-medium mb-2">
-            Key Concepts:
+            Concetti chiave:
           </label>
           <input
             type="number"
@@ -192,61 +264,49 @@ function LessonDetail() {
       }}
     >
       {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-black opacity-40"></div>
-
+      <div className="absolute inset-0 bg-black opacity-40 text-[#adbbc4]"></div>
       <div className="relative z-10 flex flex-1">
         <Sidebar />
-
-        <main className="flex-1 p-6 bg-white bg-opacity-90 rounded-lg shadow-lg mx-4 my-6">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Lesson {lessonId}
-          </h2>
-
-          {/* Upload Section - Disabled if analyzed */}
-          {!analyzed ? (
-            <UploadSection lessonId={parseInt(lessonId)} />
-          ) : (
-            <p className="text-red-600 font-semibold mt-2">
-              This lesson has been analyzed. No new resources can be added.
-            </p>
-          )}
-
-          {/* Analyze Button */}
+        <main className="flex-1 p-6 bg-[#1d2125] bg-opacity-90 rounded-lg shadow-lg mx-4 my-6 text-[#adbbc4]">
+          <h2 className="text-3xl font-bold text-[#adbbc4]">{lesson?.title}</h2>
           {!analyzed && resources.length > 0 && (
             <button
               onClick={handleAnalyze}
               className="mt-4 px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
             >
-              Analyze Lesson
+              Analizza tutto il materiale
             </button>
           )}
 
           {/* Resources Section */}
           <div className="mt-6">
-            <h3 className="text-2xl font-semibold text-gray-800">Resources</h3>
+            <h3 className="text-2xl font-semibold text-[#adbbc4]">Materiale</h3>
             {resources.length > 0 ? (
-              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-8">
                 {resources.map((resource) => (
                   <ResourceItem key={resource.id} resource={resource} />
                 ))}
+                {/* Add Resource Button */}
+                {!analyzed && <UploadSection lessonId={parseInt(lessonId)} />}
               </div>
             ) : (
-              <p className="text-gray-600 mt-2">No resources available.</p>
+              <p className="text-gray-600 mt-2">
+                Non hai aggiunto ancora materiale
+              </p>
             )}
           </div>
-
-          {/* Analysis Section */}
+          <hr className="my-6 border-t border-[#adbbc4]" />
           {analyzed && (
-            <div className="mt-8 p-6 bg-gray-100 rounded-lg shadow-md">
-              <h3 className="text-2xl font-semibold text-gray-800">Analysis</h3>
+            <div className="mt-8 rounded-lg shadow-md">
+              {/* Render SummaryList only if summary.content exists */}
+              {summary?.content && (
+                <div className="mt-4">
+                  <SummaryList content={summary.content} />
+                </div>
+              )}
 
               <div className="mt-4">
-                <h4 className="text-lg font-semibold">📄 Summary</h4>
-                <SummaryList summaries={summaries} />
-              </div>
-
-              <div className="mt-4">
-                <h4 className="text-lg font-semibold">🔑 Key Concepts</h4>
+                <h4 className="text-lg font-semibold">Concetti chiave:</h4>
                 {keyConcepts.length > 0 ? (
                   <div className="overflow-x-auto flex space-x-4 p-2">
                     <KeyConceptsList keyConcepts={keyConcepts} />
@@ -257,22 +317,17 @@ function LessonDetail() {
               </div>
 
               <div className="mt-4">
-                <h4 className="text-lg font-semibold">🎧 Audio</h4>
+                <TablesList tables={tables} />
+              </div>
+
+              <div className="mt-4">
+                <h4 className="text-lg font-semibold">Audio</h4>
                 <p>Audio playback will be available here.</p>
               </div>
 
               <div className="mt-4">
-                <h4 className="text-lg font-semibold">🗺️ Conceptual Map</h4>
-                {conceptMap ? (
-                  <Link
-                    to={`/concept-maps/${conceptMap.id}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {conceptMap.title} 🔗
-                  </Link>
-                ) : (
-                  <p>No conceptual map available.</p>
-                )}
+                <h4 className="text-lg font-semibold">Mappa concettuale</h4>
+                <ConceptMapView nodes={nodes} edges={edges} />
               </div>
             </div>
           )}

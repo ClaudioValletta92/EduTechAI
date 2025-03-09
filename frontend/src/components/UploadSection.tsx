@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import Modal from "./Modal";
+import { Plus } from "lucide-react"; // Import the Plus icon
 
 interface UploadSectionProps {
   lessonId: number;
@@ -64,9 +65,12 @@ function UploadSection({ lessonId }: UploadSectionProps) {
     <div className="flex flex-col items-center p-4">
       <button
         onClick={() => setIsModalOpen(true)}
-        className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-all"
+        className="flex flex-col items-center justify-center gap-2 p-4 border rounded-lg hover:bg-gray-100 transition w-32 h-40 text-center"
       >
-        ➕ Add Resource
+        <Plus className="w-8 h-8 text-gray-500" />
+        <span className="text-sm font-medium break-words">
+          Aggiungi materiale
+        </span>
       </button>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -107,9 +111,17 @@ function UploadSection({ lessonId }: UploadSectionProps) {
           </div>
         )}
 
-        {uploadStatus === "uploading" && <p className="text-blue-500 mt-4">Uploading…</p>}
-        {uploadStatus === "success" && <p className="text-green-500 mt-4">Upload successful ✅</p>}
-        {uploadStatus === "error" && <p className="text-red-500 mt-4">Error uploading PDF. Please try again.</p>}
+        {uploadStatus === "uploading" && (
+          <p className="text-blue-500 mt-4">Uploading…</p>
+        )}
+        {uploadStatus === "success" && (
+          <p className="text-green-500 mt-4">Upload successful ✅</p>
+        )}
+        {uploadStatus === "error" && (
+          <p className="text-red-500 mt-4">
+            Error uploading PDF. Please try again.
+          </p>
+        )}
       </Modal>
     </div>
   );

@@ -51,7 +51,8 @@ function AnnotationNode({ data }) {
         }}
       >
         <div className="annotation-text">Annotation {data.level}:</div>
-        <div className="annotation-text">{data.label}</div> {/* ✅ Removed unnecessary class */}
+        <div className="annotation-text">{data.label}</div>{" "}
+        {/* ✅ Removed unnecessary class */}
       </div>
 
       {/* Optional arrow */}
@@ -71,7 +72,6 @@ function AnnotationNode({ data }) {
     </div>
   );
 }
-
 
 function ConceptMap() {
   const store = useStoreApi();
@@ -144,7 +144,6 @@ function ConceptMap() {
       type: "smoothstep",
       style: { stroke: "#ff0000", strokeWidth: 4 }, // Red color and 2px width
     },
-
   ];
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -170,7 +169,9 @@ function ConceptMap() {
   const handleSaveEdgeLabel = () => {
     if (!selectedEdge) return;
     setEdges((eds) =>
-      eds.map((e) => (e.id === selectedEdge.id ? { ...e, label: edgeLabel } : e))
+      eds.map((e) =>
+        e.id === selectedEdge.id ? { ...e, label: edgeLabel } : e
+      )
     );
     setIsEdgeModalOpen(false);
     setSelectedEdge(null);

@@ -33,6 +33,7 @@ from .models import (
     KeyConcepts,
     Summary,
     BackgroundImage,
+    Table,
 )
 from .serializers import ProjectSerializer, LessonSerializer
 from .tasks import process_pdf_task, analyze_lesson_resources
@@ -382,33 +383,29 @@ def lesson_detail(request, lesson_id):
 @csrf_exempt
 @api_view(["GET"])
 def summaries_lesson(request, lesson_id):
-    """Retrieve all summaries for a lesson."""
+    """Retrieve the most recent summary for a lesson."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
 
     if request.method == "GET":
-        # Fetch all summaries for the lesson
-        summaries = Summary.objects.filter(lesson=lesson)
+        # Fetch the most recent summary for the lesson, ordered by created_at
+        summary = Summary.objects.filter(lesson=lesson).order_by("-created_at").first()
 
-        # If no summaries exist, return a 404 message
-        if not summaries.exists():
+        # If no summary exists, return a 404 message
+        if not summary:
             return Response(
                 {"message": "No summaries found for this lesson."}, status=404
             )
 
-        # Return a list of summaries
+        # Return the most recent summary
         return Response(
-            [
-                {
-                    "id": summary.id,
-                    "title": summary.title,
-                    "lesson": lesson.title,
-                    "content": summary.content,
-                    "created_at": summary.created_at,
-                    "updated_at": summary.updated_at,
-                    "word_count": summary.word_count,
-                }
-                for summary in summaries
-            ]
+            {
+                "id": summary.id,
+                "title": summary.title,
+                "lesson": lesson.title,
+                "content": summary.content,
+                "created_at": summary.created_at,
+                "updated_at": summary.updated_at,
+            }
         )
 
 
@@ -431,3 +428,35 @@ def available_background_images_view(request):
 
     # Return as JSON
     return JsonResponse(background_list, safe=False)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def tables_for_lesson(request, lesson_id):
+    """Retrieve all tables for a lesson."""
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    if request.method == "GET":
+        # Fetch all tables for the lesson
+        tables = Table.objects.filter(lesson=lesson)
+        logger.info(f"tables: {tables}")
+
+        # If no tables exist, return a 404 message
+        if not tables.exists():
+            return Response({"message": "No tables found for this lesson."}, status=404)
+
+        # Build the response data manually
+        tables_data = []
+        for table in tables:
+            tables_data.append(
+                {
+                    "id": table.id,
+                    "title": table.title,
+                    "data": table.data,  # Assuming `data` is a JSONField
+                    "created_at": table.created_at,
+                    "updated_at": table.updated_at,
+                }
+            )
+
+        # Return the list of tables
+        return Response(tables_data)

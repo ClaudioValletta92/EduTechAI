@@ -1,8 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Home, User, Settings, HelpCircle } from "lucide-react"; // Import icons
+import { truncateText } from "./HelperFunction";
 
 function Sidebar() {
+  const [projects, setProjects] = useState([]);
+
+  const fetchProjects = () => {
+    fetch("http://localhost:8000/api/projects/")
+      .then((res) => res.json())
+      .then((data) => setProjects(data))
+      .catch((error) => console.error("Error fetching projects:", error));
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
   const sidebarStyle: React.CSSProperties = {
     width: "200px",
     background: "#1d2125",
@@ -22,6 +36,30 @@ function Sidebar() {
     color: "#adbbc4",
     textDecoration: "none",
     padding: "8px 0",
+  };
+
+  const projectCardStyle: React.CSSProperties = {
+    position: "relative",
+    width: "100%",
+    height: "60px", // Smaller height for compact cards
+    borderRadius: "5px",
+    borderWidth: "1px",
+    borderColor: "adbbc4",
+    overflow: "hidden",
+    marginBottom: "8px",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  };
+
+  const projectTextOverlayStyle: React.CSSProperties = {
+    position: "absolute",
+    bottom: "4px",
+    right: "4px",
+    padding: "4px",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    color: "#adbbc4",
+    borderRadius: "4px",
+    fontSize: "12px",
   };
 
   return (
@@ -75,6 +113,26 @@ function Sidebar() {
         }}
       />
       <p>Recent</p>
+      <p>Spazi di lavoro</p>
+
+      {/* Spazi di lavoro section */}
+      <div>
+        {projects.map((project) => (
+          <div
+            key={project.pk}
+            style={{
+              ...projectCardStyle,
+              backgroundImage: project.fields.background_image
+                ? `url(http://localhost:8000${project.fields.background_image})`
+                : "none",
+            }}
+          >
+            <div style={projectTextOverlayStyle}>
+              <h3>{truncateText(project.fields.title, 15)}</h3>
+            </div>
+          </div>
+        ))}
+      </div>
     </aside>
   );
 }

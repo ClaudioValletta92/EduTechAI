@@ -24,17 +24,29 @@ const ResourceItem = ({ resource }) => {
   const getResourceIcon = (type) => {
     switch (type) {
       case "pdf":
-        return <LucideFilePdf className="w-6 h-6 text-red-500" />;
+        return (
+          <LucideFilePdf className="w-8 h-8 text-red-500 text-[#adbbc4] hover:text-[#1d2125" />
+        );
       case "audio":
-        return <LucideFileAudio className="w-6 h-6 text-blue-500" />;
+        return (
+          <LucideFileAudio className="w-8 h-8 text-blue-500 text-[#adbbc4] hover:text-[#1d2125]" />
+        );
       case "text":
-        return <LucideFileText className="w-6 h-6 text-gray-600" />;
+        return (
+          <LucideFileText className="w-8 h-8 text-gray-600 text-[#adbbc4] hover:text-[#1d2125]" />
+        );
       case "image":
-        return <LucideFileImage className="w-6 h-6 text-green-500" />;
+        return (
+          <LucideFileImage className="w-8 h-8 text-green-500 text-[#adbbc4] hover:text-[#1d2125]" />
+        );
       case "video":
-        return <LucideFileVideo className="w-6 h-6 text-purple-500" />;
+        return (
+          <LucideFileVideo className="w-8 h-8 text-purple-500 text-[#adbbc4] hover:text-[#1d2125]" />
+        );
       default:
-        return <LucideFile className="w-6 h-6 text-gray-400" />;
+        return (
+          <LucideFile className="w-8 h-8 text-gray-400 text-[#adbbc4] hover:text-[#1d2125]" />
+        );
     }
   };
 
@@ -45,10 +57,13 @@ const ResourceItem = ({ resource }) => {
           console.log("Dialog opening..."); // Check if this is triggered
           setIsOpen(true);
         }}
-        className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-100 transition w-full text-left"
+        className="flex flex-col items-center justify-center gap-2 p-4 border rounded-lg hover:bg-gray-100 transition w-32 h-40 text-center hover:text-[#1d2125]" // Adjusted dimensions and layout
       >
         {getResourceIcon(resource.resource_type)}
-        <span className="text-lg font-medium">{resource.title}</span>
+        <span className="text-sm font-medium break-words">
+          {resource.title}
+        </span>{" "}
+        {/* Adjusted font size and wrapping */}
       </button>
 
       <Dialog

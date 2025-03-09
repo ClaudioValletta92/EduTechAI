@@ -9,7 +9,8 @@ from app.views import (
     concept_map_detail,
     key_concept_lesson,
     summaries_lesson,
-    available_background_images_view
+    available_background_images_view,
+    tables_for_lesson,
 )
 from django.contrib import admin
 from django.urls import path
@@ -70,6 +71,14 @@ urlpatterns = [
         summaries_lesson,
         name="lesson-summaries",
     ),
-    path("api/available-backgrounds/", available_background_images_view, name="available-backgrounds"),
-    
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path(
+        "api/available-backgrounds/",
+        available_background_images_view,
+        name="available-backgrounds",
+    ),
+    path(
+        "api/lessons/<int:lesson_id>/tables/",
+        tables_for_lesson,
+        name="tables_for_lesson",
+    ),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

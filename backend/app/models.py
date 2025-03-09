@@ -228,20 +228,28 @@ class Summary(models.Model):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    content = models.TextField()  # Stores the textual content of the summary
+    content = models.JSONField()  # Stores the textual content of the summary
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     lesson = models.OneToOneField(  # Each lesson has ONE summary
         "Lesson", on_delete=models.CASCADE, related_name="summary"
     )
-    word_count = models.PositiveIntegerField(default=0)  # New field to store word count
 
     def __str__(self):
         return f"Summary: {self.title} (by {self.user.username})"
 
-    def save(self, *args, **kwargs):
-        # Calculate word count based on content
-        self.word_count = len(
-            self.content.split()
-        )  # Split content into words and count them
-        super().save(*args, **kwargs)  # Call the parent class's save method
+
+class Table(models.Model):
+    """Stores a table associated with a lesson."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    data = models.JSONField()  # Stores the table data in JSON format
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    lesson = models.ForeignKey(  # Each lesson can have multiple tables
+        "Lesson", on_delete=models.CASCADE, related_name="tables"
+    )
+
+    def __str__(self):
+        return f"Table: {self.title} (by {self.user.username})"
