@@ -10,6 +10,8 @@ from .models import (
     Summary,
     BackgroundImage,
     Table,
+    Subscription,
+    Payment,
 )
 
 admin.site.register(CustomUser)
@@ -22,3 +24,5 @@ admin.site.register(KeyConcepts)
 admin.site.register(Summary)
 admin.site.register(BackgroundImage)
 admin.site.register(Table)
+admin.site.register(Subscription)
+admin.site.register(Payment)

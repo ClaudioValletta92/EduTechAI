@@ -11,6 +11,8 @@ from app.views import (
     summaries_lesson,
     available_background_images_view,
     tables_for_lesson,
+    update_user_profile,
+    fetch_user_profile,
 )
 from django.contrib import admin
 from django.urls import path
@@ -81,4 +83,6 @@ urlpatterns = [
         tables_for_lesson,
         name="tables_for_lesson",
     ),
+    path("api/user/profile", fetch_user_profile, name="fetch_user_profile"),
+    path("api/user/profile/update", update_user_profile, name="update_user_profile"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

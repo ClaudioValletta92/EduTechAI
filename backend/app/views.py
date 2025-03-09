@@ -460,3 +460,39 @@ def tables_for_lesson(request, lesson_id):
 
         # Return the list of tables
         return Response(tables_data)
+
+
+def fetch_user_profile(request):
+    user = request.user
+    profile_data = {
+        "username": user.username,
+        "age": user.age,
+        "school": user.school,
+        "work_duration": user.work_duration,
+        "rest_duration": user.rest_duration,
+        "theme": user.theme,  # Add theme to the response
+    }
+    return JsonResponse(profile_data)
+
+
+@csrf_exempt
+def update_user_profile(request):
+    try:
+        data = json.loads(request.body)
+        user = request.user
+
+        # Update user fields
+        user.username = data.get("username", user.username)
+        user.age = data.get("age", user.age)
+        user.school = data.get("school", user.school)
+        user.work_duration = data.get("work_duration", user.work_duration)
+        user.rest_duration = data.get("rest_duration", user.rest_duration)
+        user.theme = data.get("theme", user.theme)  # Update theme
+
+        user.save()
+
+        return JsonResponse(
+            {"status": "success", "message": "Profile updated successfully!"}
+        )
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=400)

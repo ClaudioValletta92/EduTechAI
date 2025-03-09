@@ -281,12 +281,11 @@ function LessonDetail() {
           {/* Resources Section */}
           <div className="mt-6">
             <h3 className="text-2xl font-semibold text-[#adbbc4]">Materiale</h3>
-            {resources.length > 0 ? (
+            {resources.length > -1 ? (
               <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-8">
                 {resources.map((resource) => (
                   <ResourceItem key={resource.id} resource={resource} />
                 ))}
-                {/* Add Resource Button */}
                 {!analyzed && <UploadSection lessonId={parseInt(lessonId)} />}
               </div>
             ) : (

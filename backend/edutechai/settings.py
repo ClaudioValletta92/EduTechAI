@@ -3,6 +3,7 @@ from pathlib import Path
 from decouple import config
 import os
 import dj_database_url  # Ensure you have this package installed
+
 """
 Django settings for edutechai project.
 
@@ -15,14 +16,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB
-X_FRAME_OPTIONS = 'ALLOWALL'  # This allows all domains to embed your content
+X_FRAME_OPTIONS = "ALLOWALL"  # This allows all domains to embed your content
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 # Load MEDIA_ROOT from .env
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'
-GEMINI_API_KEY=config("GEMINI_API_KEY")
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
+GEMINI_API_KEY = config("GEMINI_API_KEY")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -96,10 +97,7 @@ WSGI_APPLICATION = "edutechai.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 
-DATABASES = {
-    "default": dj_database_url.config(default=os.getenv("DATABASE_URL"))
-}
-
+DATABASES = {"default": dj_database_url.config(default=os.getenv("DATABASE_URL"))}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -161,14 +159,14 @@ LOGGING = {
     "disable_existing_loggers": False,
     "handlers": {
         "console": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "logging.StreamHandler",
         },
     },
     "loggers": {
         "django.db.backends": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": "INFO",
         },
     },
 }
