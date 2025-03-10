@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "rest_framework",  # Per API REST
     "django_celery_results",  # Per memorizzare i risultati di Celery
     "corsheaders",
+    "accounts",
 ]
 
 MIDDLEWARE = [

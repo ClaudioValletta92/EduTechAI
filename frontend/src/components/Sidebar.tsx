@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Home, User, Settings, HelpCircle } from "lucide-react"; // Import icons
 import { truncateText } from "./HelperFunction";
+import axios from "axios"; // Import axios
 
 function Sidebar() {
   const [projects, setProjects] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null); // State to store the current user
 
+  // Fetch projects
   const fetchProjects = () => {
     fetch("http://localhost:8000/api/projects/")
       .then((res) => res.json())
@@ -13,8 +16,24 @@ function Sidebar() {
       .catch((error) => console.error("Error fetching projects:", error));
   };
 
+  // Fetch current user
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/api/auth/current-user/",
+        {
+          withCredentials: true, // Include cookies for authentication
+        }
+      );
+      setCurrentUser(response.data);
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+    }
+  };
+
   useEffect(() => {
     fetchProjects();
+    fetchCurrentUser(); // Fetch the current user when the component mounts
   }, []);
 
   const sidebarStyle: React.CSSProperties = {
@@ -64,6 +83,13 @@ function Sidebar() {
 
   return (
     <aside style={sidebarStyle}>
+      {/* Display the current user's username */}
+      {currentUser && (
+        <div style={{ marginBottom: "1rem", color: "#adbbc4" }}>
+          Welcome, <strong>{currentUser.username}</strong>
+        </div>
+      )}
+
       <ul style={navListStyle}>
         <li>
           <Link to="/" style={linkStyle}>

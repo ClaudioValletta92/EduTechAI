@@ -15,7 +15,7 @@ from app.views import (
     fetch_user_profile,
 )
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -85,4 +85,5 @@ urlpatterns = [
     ),
     path("api/user/profile", fetch_user_profile, name="fetch_user_profile"),
     path("api/user/profile/update", update_user_profile, name="update_user_profile"),
+    path("api/auth/", include("accounts.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

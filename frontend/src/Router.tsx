@@ -1,4 +1,3 @@
-// src/Router.tsx
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "./App"; // The main layout (Header, Sidebar, etc.)
@@ -9,6 +8,10 @@ import ProjectDetail from "./pages/ProjectDetail";
 import LessonDetail from "./pages/LessonDetail";
 import ConceptMapDetail from "./pages/ConceptMapDetail";
 import KeyConceptsDetail from "./pages/KeyConceptsDetail";
+import LoginPage from "./pages/LoginPage"; // Import the new LoginPage component
+import RegisterPage from "./pages/RegisterPage"; // Import the new RegisterPage component
+import LogoutPage from "./pages/LogoutPage"; // Import the new LogoutPage component
+
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -31,10 +34,17 @@ function AppRouter() {
           path="/key-concepts/:keyConceptsId"
           element={<KeyConceptsDetail />}
         />
+
+        {/* Add the new authentication routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/logout" element={<LogoutPage />} />
+
         {/* Catch-all route */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
 }
+
 export default AppRouter;

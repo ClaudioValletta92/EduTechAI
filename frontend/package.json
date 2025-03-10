@@ -13,6 +13,7 @@
     "@types/node": "^22.13.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "axios": "^1.8.2",
     "cra-template": "1.2.0",
     "framer-motion": "^12.4.7",
     "lucide-react": "^0.475.0",
