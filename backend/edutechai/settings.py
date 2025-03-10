@@ -92,7 +92,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "edutechai.wsgi.application"
-
+# Enable session authentication
+SESSION_ENGINE = "django.contrib.sessions.backends.db"  # Use database-backed sessions
+SESSION_COOKIE_NAME = "sessionid"  # Default session cookie name
+SESSION_COOKIE_AGE = 1209600  # Session expiry in seconds (2 weeks)
+SESSION_COOKIE_SECURE = False  # Set to True in production (HTTPS only)
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to the cookie
+SESSION_COOKIE_SAMESITE = "Lax"  # Prevent CSRF attacks
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

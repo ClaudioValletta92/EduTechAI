@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 function ProfilePage() {
   const [username, setUsername] = useState("");
-  const [age, setAge] = useState<number | null>(null);
+  const [age, setAge] = useState<number | "">(""); // Initialize as an empty string or 0
   const [school, setSchool] = useState("");
   const [workDuration, setWorkDuration] = useState(25);
   const [restDuration, setRestDuration] = useState(5);
@@ -12,15 +13,20 @@ function ProfilePage() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/user/profile");
-        const data = await response.json();
+        const response = await axios.get(
+          "http://localhost:8000/api/auth/current-user/",
+          {
+            withCredentials: true,
+          }
+        );
+        const data = response.data;
         console.log("User data:", data);
-        setUsername(data.username);
-        setAge(data.age);
-        setSchool(data.school);
-        setWorkDuration(data.work_duration);
-        setRestDuration(data.rest_duration);
-        setTheme(data.theme); // Set theme from the backend
+        setUsername(data.username || ""); // Handle null/undefined
+        setAge(data.age || 0); // Replace null/undefined with 0
+        setSchool(data.school || ""); // Handle null/undefined
+        setWorkDuration(data.work_duration || 25); // Default to 25
+        setRestDuration(data.rest_duration || 5); // Default to 5
+        setTheme(data.theme || "dark"); // Default to "dark"
       } catch (error) {
         console.error("Failed to fetch user data:", error);
       }
@@ -34,25 +40,25 @@ function ProfilePage() {
     e.preventDefault();
 
     try {
-      const response = await fetch(
-        "http://localhost:8000/api/user/profile/update",
+      const response = await axios.put(
+        "http://localhost:8000/api/auth/update-profile/",
         {
-          method: "PUT",
+          username,
+          age: age === "" ? null : age,
+          school,
+          work_duration: workDuration,
+          rest_duration: restDuration,
+          theme,
+        },
+        {
+          withCredentials: true, // Include cookies
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json", // Ensure the correct Content-Type
           },
-          body: JSON.stringify({
-            username,
-            age,
-            school,
-            work_duration: workDuration,
-            rest_duration: restDuration,
-            theme, // Include theme in the update
-          }),
         }
       );
 
-      if (response.ok) {
+      if (response.status === 200) {
         alert("Profile updated successfully!");
       } else {
         alert("Failed to update profile.");
@@ -83,8 +89,10 @@ function ProfilePage() {
           <label className="block text-sm font-medium mb-1">Age</label>
           <input
             type="number"
-            value={age || ""}
-            onChange={(e) => setAge(Number(e.target.value))}
+            value={age === "" ? "" : age} // Handle empty string
+            onChange={(e) =>
+              setAge(e.target.value === "" ? "" : Number(e.target.value))
+            }
             className="w-full p-2 bg-[#2d333b] border border-[#444c56] rounded"
           />
         </div>

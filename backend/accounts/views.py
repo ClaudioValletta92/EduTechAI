@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from app.models import CustomUser  # Import your CustomUser model
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 
 
 @csrf_exempt
@@ -72,6 +73,36 @@ def current_user(request):
             "email": user.email,
             "age": user.age,
             "school": user.school,
+            "theme": user.theme,
+        }
+    )
+
+
+@login_required
+@csrf_exempt
+@require_http_methods(["PUT"])
+def update_profile(request):
+    user = request.user
+    data = request.json()  # Parse JSON data from the request
+
+    # Update user fields
+    user.username = data.get("username", user.username)
+    user.age = data.get("age", user.age)
+    user.school = data.get("school", user.school)
+    user.work_duration = data.get("work_duration", user.work_duration)
+    user.rest_duration = data.get("rest_duration", user.rest_duration)
+    user.theme = data.get("theme", user.theme)
+
+    user.save()
+
+    return JsonResponse(
+        {
+            "message": "Profile updated successfully!",
+            "username": user.username,
+            "age": user.age,
+            "school": user.school,
+            "work_duration": user.work_duration,
+            "rest_duration": user.rest_duration,
             "theme": user.theme,
         }
     )
