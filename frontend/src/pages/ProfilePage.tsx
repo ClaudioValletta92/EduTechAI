@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+// Configure Axios to include CSRF token
+axios.defaults.xsrfCookieName = "csrftoken";
+axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+axios.defaults.withCredentials = true;
 function ProfilePage() {
+  // Configure Axios to include CSRF token
+  axios.defaults.xsrfCookieName = "csrftoken";
+  axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
+  axios.defaults.withCredentials = true;
   const [username, setUsername] = useState("");
   const [age, setAge] = useState<number | "">(""); // Initialize as an empty string or 0
   const [school, setSchool] = useState("");
@@ -40,6 +48,10 @@ function ProfilePage() {
     e.preventDefault();
 
     try {
+      const csrfToken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("csrftoken="))
+        ?.split("=")[1];
       const response = await axios.put(
         "http://localhost:8000/api/auth/update-profile/",
         {
@@ -54,6 +66,7 @@ function ProfilePage() {
           withCredentials: true, // Include cookies
           headers: {
             "Content-Type": "application/json", // Ensure the correct Content-Type
+            "X-CSRFTOKEN": csrfToken, // Manually include the CSRF token
           },
         }
       );

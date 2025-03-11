@@ -4,7 +4,13 @@ import Sidebar from "./components/Sidebar";
 import UploadSection from "./components/UploadSection";
 import ProjectsList from "./components/ProjectList";
 import ProjectDetail from "./pages/ProjectDetail";
+import axios from "axios";
 
+// Configure Axios to include CSRF token
+axios.defaults.xsrfCookieName = "csrftoken";
+axios.defaults.withCredentials = true; // Include cookies for session-based auth
+
+axios.defaults.xsrfHeaderName = "X-CSRFTOKEN";
 function App() {
   const [selectedProject, setSelectedProject] = useState(null);
 

@@ -85,43 +85,43 @@ from django.views.decorators.http import require_http_methods
 import json
 
 
-@login_required
 @csrf_exempt  # Disable CSRF for this view
-@require_http_methods(["PUT", "OPTIONS"])  # Allow both PUT and OPTIONS
 def update_profile(request):
-    if request.method == "OPTIONS":
-        # Handle preflight request
-        response = JsonResponse({})
-        response["Access-Control-Allow-Origin"] = "http://localhost:3000"
-        response["Access-Control-Allow-Methods"] = "PUT, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type"
-        response["Access-Control-Allow-Credentials"] = "true"
-        return response
+    if request.method == "PUT":
+        if request.method == "OPTIONS":
+            # Handle preflight request
+            response = JsonResponse({})
+            response["Access-Control-Allow-Origin"] = "http://localhost:3000"
+            response["Access-Control-Allow-Methods"] = "PUT, OPTIONS"
+            response["Access-Control-Allow-Headers"] = "Content-Type"
+            response["Access-Control-Allow-Credentials"] = "true"
+            return response
 
-    try:
-        data = json.loads(request.body)  # Parse JSON data from the request body
-        user = request.user
+        try:
+            data = json.loads(request.body)  # Parse JSON data from the request body
+            user = request.user
 
-        # Update user fields
-        user.username = data.get("username", user.username)
-        user.age = data.get("age", user.age)
-        user.school = data.get("school", user.school)
-        user.work_duration = data.get("work_duration", user.work_duration)
-        user.rest_duration = data.get("rest_duration", user.rest_duration)
-        user.theme = data.get("theme", user.theme)
+            # Update user fields
+            user.username = data.get("username", user.username)
+            user.age = data.get("age", user.age)
+            user.school = data.get("school", user.school)
+            user.work_duration = data.get("work_duration", user.work_duration)
+            user.rest_duration = data.get("rest_duration", user.rest_duration)
+            user.theme = data.get("theme", user.theme)
 
-        user.save()
+            user.save()
 
-        return JsonResponse(
-            {
-                "message": "Profile updated successfully!",
-                "username": user.username,
-                "age": user.age,
-                "school": user.school,
-                "work_duration": user.work_duration,
-                "rest_duration": user.rest_duration,
-                "theme": user.theme,
-            }
-        )
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
+            return JsonResponse(
+                {
+                    "message": "Profile updated successfully!",
+                    "username": user.username,
+                    "age": user.age,
+                    "school": user.school,
+                    "work_duration": user.work_duration,
+                    "rest_duration": user.rest_duration,
+                    "theme": user.theme,
+                }
+            )
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
