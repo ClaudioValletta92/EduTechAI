@@ -71,7 +71,7 @@ MIDDLEWARE = [
 
 CORS_ALLOW_CREDENTIALS = True  # Allow authentication via cookies
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
-CORS_ALLOW_HEADERS = ["*"]  # Allow all headers
+CORS_ALLOW_HEADERS = ["*"]  # Allow all headers (temporary for debugging)
 
 ROOT_URLCONF = "edutechai.urls"
 
@@ -99,6 +99,7 @@ SESSION_COOKIE_AGE = 1209600  # Session expiry in seconds (2 weeks)
 SESSION_COOKIE_SECURE = False  # Set to True in production (HTTPS only)
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to the cookie
 SESSION_COOKIE_SAMESITE = "Lax"  # Prevent CSRF attacks
+CSRF_COOKIE_SECURE = False  # Only send CSRF cookies over HTTPS
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

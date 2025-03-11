@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const Login = () => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,11 +19,15 @@ const Login = () => {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
+          withCredentials: true, // Include cookies for session-based authentication
         }
       );
       console.log(response.data);
+
+      // Redirect to the home page after successful login
+      navigate("/");
     } catch (error) {
-      console.error(error.response.data);
+      console.error(error.response?.data);
     }
   };
 
