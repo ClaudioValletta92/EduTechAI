@@ -378,3 +378,34 @@ class LessonResource(models.Model):
 
     class Meta:
         db_table = "app_lessonresource"  # Keep custom table name
+
+
+class Task(models.Model):
+    STATUS_CHOICES = [
+        ('todo', 'To Do'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    due_date = models.DateField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='todo')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='tasks')
+
+    # Optional links to other entities
+    project = models.ForeignKey('app.Project', on_delete=models.CASCADE, related_name='tasks', blank=True, null=True)
+    lesson = models.ForeignKey('app.Lesson', on_delete=models.CASCADE, related_name='tasks', blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.get_status_display()})"

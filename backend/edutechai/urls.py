@@ -1,19 +1,9 @@
 from app.views import (
-    project_list_create_view,
-    lesson_list_by_project,
-    upload_pdf,
-    lesson_resource_list,
-    lesson_concept_map,
-    analyze_lesson,
-    lesson_detail,
-    concept_map_detail,
-    key_concept_lesson,
-    summaries_lesson,
-    available_background_images_view,
     tables_for_lesson,
     update_user_profile,
     fetch_user_profile,
 )
+import app.views as views
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -39,43 +29,43 @@ Including another URLconf
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/projects/", project_list_create_view, name="project-list-create"),
+    path("api/projects/", views.project_list_create_view, name="project-list-create"),
     path(
         "api/projects/<int:project_id>/lessons/",
-        lesson_list_by_project,
+        views.lesson_list_by_project,
         name="lesson-list-by-project",
     ),
-    path("api/lessons/<int:lesson_id>/upload-pdf/", upload_pdf, name="upload-pdf"),
+    path("api/lessons/<int:lesson_id>/upload-pdf/", views.upload_pdf, name="upload-pdf"),
     path(
         "api/lessons/<int:lesson_id>/resources/",
-        lesson_resource_list,
+        views.lesson_resource_list,
         name="lesson-resource-list",
     ),
     path(
         "api/lessons/<int:lesson_id>/concept-map/",
-        lesson_concept_map,
+        views.lesson_concept_map,
         name="lesson-concept-map",
     ),
-    path("api/lessons/<int:lesson_id>/analyze/", analyze_lesson, name="analyze_lesson"),
-    path("api/lessons/<int:lesson_id>/", lesson_detail, name="lesson_detail"),
+    path("api/lessons/<int:lesson_id>/analyze/", views.analyze_lesson, name="analyze_lesson"),
+    path("api/lessons/<int:lesson_id>/", views.lesson_detail, name="lesson_detail"),
     path(
         "api/concept-maps/<int:concept_map_id>/",
-        concept_map_detail,
+        views.concept_map_detail,
         name="concept-map-detail",
     ),
     path(
         "api/lessons/<int:lesson_id>/key-concept/",
-        key_concept_lesson,
+        views.key_concept_lesson,
         name="lesson-key-concept",
     ),
     path(
         "api/lessons/<int:lesson_id>/summaries/",
-        summaries_lesson,
+        views.summaries_lesson,
         name="lesson-summaries",
     ),
     path(
         "api/available-backgrounds/",
-        available_background_images_view,
+        views.available_background_images_view,
         name="available-backgrounds",
     ),
     path(
@@ -86,4 +76,7 @@ urlpatterns = [
     path("api/user/profile", fetch_user_profile, name="fetch_user_profile"),
     path("api/user/profile/update", update_user_profile, name="update_user_profile"),
     path("api/auth/", include("accounts.urls")),
+    path('api/tasks/', views.task_list, name='task-list'),  # Fetch tasks for the logged-in user
+    path('api/tasks/<int:pk>/', views.task_detail, name='task-detail'),  # Modify or delete a specific task for the logged-in user
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

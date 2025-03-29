@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Home, User, Settings, HelpCircle } from "lucide-react"; // Import icons
+import { Home, User, Settings, HelpCircle, List, CheckCircle } from "lucide-react"; // Import icons
 import { truncateText } from "./HelperFunction";
 import axios from "axios"; // Import axios
 
@@ -41,7 +41,9 @@ function Sidebar() {
     background: "#1d2125",
     padding: "1rem",
     color: "#adbbc4", // Text color
+    borderRight: "1px solid #adbbc4", // Add this line for the vertical separator
   };
+  
 
   const navListStyle: React.CSSProperties = {
     listStyle: "none",
@@ -101,6 +103,12 @@ function Sidebar() {
             <User size={18} color="#adbbc4" /> Profile
           </Link>
         </li>
+        <li>
+          <Link to="/todo" style={linkStyle}>
+            <List size={18} color="#adbbc4" /> To-Do List
+          </Link>
+        </li>
+
       </ul>
 
       <button

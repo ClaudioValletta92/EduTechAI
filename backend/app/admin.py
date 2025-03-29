@@ -12,6 +12,7 @@ from .models import (
     Table,
     Subscription,
     Payment,
+    Task,
 )
 
 admin.site.register(CustomUser)
@@ -26,3 +27,4 @@ admin.site.register(BackgroundImage)
 admin.site.register(Table)
 admin.site.register(Subscription)
 admin.site.register(Payment)
+admin.site.register(Task)

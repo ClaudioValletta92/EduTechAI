@@ -65,7 +65,9 @@ function ProfilePage() {
         {
           withCredentials: true, // Include cookies
           headers: {
-            "Content-Type": "application/json", // Ensure the correct Content-Type
+            "access-control-allow-origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Methods": "*",
             "X-CSRFTOKEN": csrfToken, // Manually include the CSRF token
           },
         }

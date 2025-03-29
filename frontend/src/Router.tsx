@@ -11,6 +11,7 @@ import KeyConceptsDetail from "./pages/KeyConceptsDetail";
 import LoginPage from "./pages/LoginPage"; // Import the new LoginPage component
 import RegisterPage from "./pages/RegisterPage"; // Import the new RegisterPage component
 import LogoutPage from "./pages/LogoutPage"; // Import the new LogoutPage component
+import ToDoListPage from "./pages/ToDoListPage"; // Import the new To-Do List page
 
 function AppRouter() {
   return (
@@ -39,6 +40,7 @@ function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/logout" element={<LogoutPage />} />
+        <Route path="/todo" element={<ToDoListPage />} />
 
         {/* Catch-all route */}
         <Route path="*" element={<NotFoundPage />} />

@@ -29,7 +29,7 @@ GEMINI_API_KEY = config("GEMINI_API_KEY")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-i##!x!4__2bh@sbu1!olg09!g4q-e!!fn&g)!4l2!@099(dn7f"
-
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

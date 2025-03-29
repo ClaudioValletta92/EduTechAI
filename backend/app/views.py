@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 from django.views.decorators.http import require_GET
 import time
+from .models import Task
 
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
@@ -510,3 +511,100 @@ def update_user_profile(request):
         )
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=400)
+
+@csrf_exempt
+def task_list(request):
+    if request.method == 'GET':
+        # Retrieve all tasks for the logged-in user
+        tasks = Task.objects.filter(user=request.user).values(
+            'id', 'title', 'description', 'due_date', 'status', 'priority', 'user_id', 'project_id', 'lesson_id', 'created_at', 'updated_at'
+        )
+        return JsonResponse(list(tasks), safe=False)
+
+    elif request.method == 'POST':
+        # Create a new task for the logged-in user
+        data = json.loads(request.body)
+        title = data.get('title')
+        description = data.get('description', '')
+        due_date = data.get('due_date')
+        status = data.get('status', 'todo')
+        priority = data.get('priority', 'medium')
+
+        task = Task.objects.create(
+            title=title,
+            description=description,
+            due_date=due_date,
+            status=status,
+            priority=priority,
+            user=request.user  # Associate the task with the currently logged-in user
+        )
+
+        # Return the newly created task
+        return JsonResponse({
+            'id': task.id,
+            'title': task.title,
+            'description': task.description,
+            'due_date': task.due_date,
+            'status': task.status,
+            'priority': task.priority,
+            'user_id': task.user.id,
+            'created_at': task.created_at,
+            'updated_at': task.updated_at,
+        }, status=201)
+        
+@csrf_exempt   
+def task_detail(request, pk):
+    task = get_object_or_404(Task, pk=pk)
+
+    # Ensure the task belongs to the currently logged-in user
+    if task.user != request.user:
+        return JsonResponse({'error': 'You do not have permission to view or modify this task.'}, status=403)
+
+    if request.method == 'GET':
+        # Retrieve a single task
+        return JsonResponse({
+            'id': task.id,
+            'title': task.title,
+            'description': task.description,
+            'due_date': task.due_date,
+            'status': task.status,
+            'priority': task.priority,
+            'user_id': task.user.id,
+            'project_id': task.project.id if task.project else None,
+            'lesson_id': task.lesson.id if task.lesson else None,
+            'created_at': task.created_at,
+            'updated_at': task.updated_at,
+        })
+
+    elif request.method == 'PUT':
+        # Update an existing task
+        data = json.loads(request.body)
+        task.title = data.get('title', task.title)
+        task.description = data.get('description', task.description)
+        task.due_date = data.get('due_date', task.due_date)
+        task.status = data.get('status', task.status)
+        task.priority = data.get('priority', task.priority)
+
+        # If the user is changing the user field (though this is not common)
+        user_id = data.get('user_id')
+        if user_id:
+            task.user = get_object_or_404(CustomUser, id=user_id)
+
+        task.save()
+
+        return JsonResponse({
+            'id': task.id,
+            'title': task.title,
+            'description': task.description,
+            'due_date': task.due_date,
+            'status': task.status,
+            'priority': task.priority,
+            'user_id': task.user.id,
+            'created_at': task.created_at,
+            'updated_at': task.updated_at,
+        })
+
+    elif request.method == 'DELETE':
+        # Delete the task
+        task.delete()
+        return JsonResponse({'message': 'Task deleted successfully'}, status=204)
