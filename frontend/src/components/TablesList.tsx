@@ -16,7 +16,8 @@ function TablesList({ tables }: TablesListProps) {
   }
 
   return (
-    <div>
+    <div></div>) ;
+   /* <div>
       {tables.map((table) => (
         <div key={table.id} style={{ marginBottom: "20px" }}>
           <h5 className="text-md font-semibold mb-2">{table.title}</h5>
@@ -24,7 +25,7 @@ function TablesList({ tables }: TablesListProps) {
             <thead>
               <tr style={{ backgroundColor: "#f2f2f2", color: "#1d2125" }}>
                 {/* Escludi la colonna "id" dall'intestazione */}
-                {Object.keys(table.data[0])
+      /*           {Object.keys(table.data[0])
                   .filter((column) => column !== "id") // Escludi "id"
                   .map((column) => (
                     <th
@@ -49,8 +50,8 @@ function TablesList({ tables }: TablesListProps) {
                     color: "#adbbc4",
                   }}
                 >
-                  {/* Escludi la colonna "id" dai dati */}
-                  {Object.entries(row)
+                  {/* Escludi la colonna "id" dai dati */
+         /*          {Object.entries(row)
                     .filter(([key]) => key !== "id") // Escludi "id"
                     .map(([key, value], colIndex) => (
                       <td
@@ -69,5 +70,5 @@ function TablesList({ tables }: TablesListProps) {
     </div>
   );
 }
-
+*/
 export default TablesList;

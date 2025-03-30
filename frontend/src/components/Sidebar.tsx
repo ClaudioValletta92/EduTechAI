@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Home, User, Settings, HelpCircle, List, CheckCircle } from "lucide-react"; // Import icons
+import { Home, User, Settings, HelpCircle, List, CalendarDays } from "lucide-react"; // Importa l'icona del calendario
 import { truncateText } from "./HelperFunction";
 import axios from "axios"; // Import axios
 
@@ -108,7 +108,11 @@ function Sidebar() {
             <List size={18} color="#adbbc4" /> To-Do List
           </Link>
         </li>
-
+        <li>
+          <Link to="/important-dates" style={linkStyle}>
+            <CalendarDays size={18} color="#adbbc4" /> Important Dates
+          </Link>
+        </li>
       </ul>
 
       <button

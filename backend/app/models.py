@@ -409,3 +409,27 @@ class Task(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.get_status_display()})"
+    
+class ImportantDate(models.Model):
+    TYPE_CHOICES = [
+        ('exam', 'Exam'),
+        ('deadline', 'Deadline'),
+        ('review', 'Review'),
+        ('custom', 'Custom'),
+    ]
+
+    title = models.CharField(max_length=255)
+    date = models.DateField()
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='custom')
+    description = models.TextField(blank=True, null=True)
+
+    # Collegamenti opzionali
+    project = models.ForeignKey('app.Project', on_delete=models.CASCADE, related_name='important_dates', blank=True, null=True)
+    lesson = models.ForeignKey('app.Lesson', on_delete=models.CASCADE, related_name='important_dates', blank=True, null=True)
+    task = models.ForeignKey('app.Task', on_delete=models.CASCADE, related_name='important_dates', blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.get_type_display()}) - {self.date}"

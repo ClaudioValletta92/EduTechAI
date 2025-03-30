@@ -12,6 +12,7 @@ import LoginPage from "./pages/LoginPage"; // Import the new LoginPage component
 import RegisterPage from "./pages/RegisterPage"; // Import the new RegisterPage component
 import LogoutPage from "./pages/LogoutPage"; // Import the new LogoutPage component
 import ToDoListPage from "./pages/ToDoListPage"; // Import the new To-Do List page
+import ImportantDatesPage from "./pages/ImportantDatesPage"; // Importa la pagina
 
 function AppRouter() {
   return (
@@ -44,6 +45,8 @@ function AppRouter() {
 
         {/* Catch-all route */}
         <Route path="*" element={<NotFoundPage />} />
+        <Route path="/important-dates" element={<ImportantDatesPage />} />
+
       </Routes>
     </BrowserRouter>
   );

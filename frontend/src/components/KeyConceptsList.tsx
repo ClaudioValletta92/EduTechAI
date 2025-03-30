@@ -3,11 +3,13 @@ import Card from "../components/Card";
 
 interface KeyConcept {
   id: number;
-  title: string;
-  description: string;
-  importance: number;
-  synonyms: string[];
-  misconceptions: string[];
+  data: {
+    title: string;
+    description: string;
+    importance: number;
+    synonyms: string[];
+    misconceptions: string[];
+  };
 }
 
 interface KeyConceptsListProps {
@@ -15,17 +17,16 @@ interface KeyConceptsListProps {
 }
 
 const KeyConceptsList: React.FC<KeyConceptsListProps> = ({ keyConcepts }) => {
-  console.log("Key Concepts Data in list component", keyConcepts); // Debugging
   if (keyConcepts.length === 0) {
     return <p className="text-gray-500">No key concepts available.</p>;
   }
 
   return (
-    <div className="overflow-x-auto flex flex-row space-x-4 p-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2">
       {keyConcepts
-        .sort((a, b) => b.importance - a.importance) // Sort by importance
+        .sort((a, b) => b.data.importance - a.data.importance)
         .map((concept) => (
-          <div key={concept.id} className="min-w-[250px] min-h-[300px]">
+          <div key={concept.id} className="w-full">
             <Card
               title={concept.data.title}
               description={concept.data.description}

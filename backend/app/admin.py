@@ -13,6 +13,7 @@ from .models import (
     Subscription,
     Payment,
     Task,
+    ImportantDate,
 )
 
 admin.site.register(CustomUser)
@@ -28,3 +29,5 @@ admin.site.register(Table)
 admin.site.register(Subscription)
 admin.site.register(Payment)
 admin.site.register(Task)
+admin.site.register(ImportantDate)
+admin.site.site_header = "AI Tutor Admin"

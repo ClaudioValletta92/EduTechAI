@@ -264,11 +264,9 @@ function LessonDetail() {
       }}
     >
       {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-black opacity-40 text-[#adbbc4]"></div>
       <div className="relative z-10 flex flex-1">
         <Sidebar />
-        <main className="flex-1 p-6 bg-[#1d2125] bg-opacity-90 rounded-lg shadow-lg mx-4 my-6 text-[#adbbc4]">
-          <h2 className="text-3xl font-bold text-[#adbbc4]">{lesson?.title}</h2>
+        <main className="flex-1 p-6 bg-[#1d2125] bg-opacity-90 rounded-lg shadow-lg mx-4 my-6 text-[#adbbc4] overflow-hidden">          <h2 className="text-3xl font-bold text-[#adbbc4]">{lesson?.title}</h2>
           {!analyzed && resources.length > 0 && (
             <button
               onClick={handleAnalyze}
@@ -304,16 +302,14 @@ function LessonDetail() {
                 </div>
               )}
 
-              <div className="mt-4">
-                <h4 className="text-lg font-semibold">Concetti chiave:</h4>
-                {keyConcepts.length > 0 ? (
-                  <div className="overflow-x-auto flex space-x-4 p-2">
-                    <KeyConceptsList keyConcepts={keyConcepts} />
-                  </div>
-                ) : (
-                  <p>No key concepts available.</p>
-                )}
-              </div>
+            <div className="mt-4">
+              <h4 className="text-lg font-semibold">Concetti chiave:</h4>
+              {keyConcepts.length > 0 ? (
+                <KeyConceptsList keyConcepts={keyConcepts} />
+              ) : (
+                <p>No key concepts available.</p>
+              )}
+            </div>
 
               <div className="mt-4">
                 <TablesList tables={tables} />

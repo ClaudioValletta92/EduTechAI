@@ -150,36 +150,45 @@ def analyze_lesson_resources(
             resource.entry_text for resource in resources if resource.entry_text
         )
 
-        # Prepare the prompt for the Google Gemini API
+            # Prepare the prompt for the Google Gemini API
         prompt = (
-            f"Genera un riassunto del seguente testo in circa {resume_length} parole. Parole, non caratteri. "
-            "Il riassunto deve essere chiaro, conciso e includere i punti principali.\n\n"
-            f"Inoltre, identifica circa {key_concepts_count} concetti chiave del testo. Per ogni concetto, fornisci:\n"
-            "- Un titolo breve e descrittivo\n"
-            "- Una descrizione dettagliata\n"
-            "- Un livello di importanza da 1 a 5\n"
-            "- Sinonimi rilevanti\n"
-            "- Errori comuni o idee sbagliate associate al concetto\n\n"
-            "Restituisci la risposta in formato JSON con la seguente struttura:\n"
-            "{\n"
-            '  "summary": "Il riassunto generato",\n'
-            '  "key_concepts": [\n'
-            "    {\n"
-            '      "id": 1,\n'
-            '      "title": "Titolo del concetto",\n'
+        f"Genera un riassunto del seguente testo suddiviso in paragrafi. "
+        "Ogni paragrafo deve avere:\n"
+        "- Un ID numerico progressivo\n"
+        "- Un titolo breve e descrittivo\n"
+        "- Un riassunto chiaro e conciso\n\n"
+        f"Inoltre, identifica circa {key_concepts_count} concetti chiave del testo. Per ogni concetto, fornisci:\n"
+        "- Un titolo breve e descrittivo\n"
+        "- Una descrizione dettagliata\n"
+        "- Un livello di importanza da 1 a 5\n"
+        "- Sinonimi rilevanti\n"
+        "- Errori comuni o idee sbagliate associate al concetto\n\n"
+        "Restituisci la risposta in formato JSON con la seguente struttura:\n"
+        "{\n"
+        '  "summary": [\n'
+        "    {\n"
+        '      "id": 1,\n'
+        '      "title": "Titolo del paragrafo",\n'
+        '      "summary": "Riassunto del paragrafo"\n'
+        "    }\n"
+        "  ],\n"
+        '  "key_concepts": [\n'
+        "    {\n"
+        '      "id": 1,\n'
+        '      "title": "Titolo del concetto",\n'
             '      "description": "Descrizione del concetto",\n'
             '      "importance": 5,\n'
             '      "synonyms": ["Sinonimo 1", "Sinonimo 2"],\n'
             '      "misconceptions": ["Errore comune 1", "Errore comune 2"]\n'
             "    }\n"
             "  ]\n"
-            "}\n\n"
-            f"Testo:\n{combined_text}"
+        "}\n\n"
+        f"Testo:\n{combined_text}"
         )
 
-        # Call Google Gemini API to generate the summary and key concepts
-        # Call Google Gemini API to generate the summary and key concepts
+    # Call Google Gemini API to generate the summary and key concepts
         response_data = generate_response_from_google(prompt)
+
         print("Raw response:", response_data)
 
         # Clean the JSON response
