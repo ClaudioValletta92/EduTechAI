@@ -11,7 +11,7 @@ import SummaryList from "../components/SummaryList";
 import { Plus } from "lucide-react"; // Import the Plus icon
 import TablesList from "../components/TablesList";
 import ConceptMapView from "../components/ConceptMapView";
-
+import Timeline from "../components/Timeline"; // Import the Timeline component
 interface KeyConcept {
   id: number;
   title: string;
@@ -311,9 +311,15 @@ function LessonDetail() {
               )}
             </div>
 
-              <div className="mt-4">
+            <div className="mt-4">
+              {Array.isArray(tables) && tables.length > 0 ? (
                 <TablesList tables={tables} />
-              </div>
+              ) : (
+                <p>Nessuna tabella disponibile.</p>
+              )}
+            </div>
+
+                <Timeline />
 
               <div className="mt-4">
                 <h4 className="text-lg font-semibold">Audio</h4>

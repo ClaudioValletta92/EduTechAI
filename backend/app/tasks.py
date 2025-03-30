@@ -7,6 +7,7 @@ from .models import (
     ConceptMap,
     Summary,
     KeyConcepts,
+    Table,
 )
 from .utils import (
     extract_text_from_pdf,
@@ -152,39 +153,52 @@ def analyze_lesson_resources(
 
             # Prepare the prompt for the Google Gemini API
         prompt = (
-        f"Genera un riassunto del seguente testo suddiviso in paragrafi. "
-        "Ogni paragrafo deve avere:\n"
-        "- Un ID numerico progressivo\n"
-        "- Un titolo breve e descrittivo\n"
-        "- Un riassunto chiaro e conciso\n\n"
-        f"Inoltre, identifica circa {key_concepts_count} concetti chiave del testo. Per ogni concetto, fornisci:\n"
-        "- Un titolo breve e descrittivo\n"
-        "- Una descrizione dettagliata\n"
-        "- Un livello di importanza da 1 a 5\n"
-        "- Sinonimi rilevanti\n"
-        "- Errori comuni o idee sbagliate associate al concetto\n\n"
-        "Restituisci la risposta in formato JSON con la seguente struttura:\n"
-        "{\n"
-        '  "summary": [\n'
-        "    {\n"
-        '      "id": 1,\n'
-        '      "title": "Titolo del paragrafo",\n'
-        '      "summary": "Riassunto del paragrafo"\n'
-        "    }\n"
-        "  ],\n"
-        '  "key_concepts": [\n'
-        "    {\n"
-        '      "id": 1,\n'
-        '      "title": "Titolo del concetto",\n'
+            f"Genera un riassunto dettagliato del seguente testo suddiviso in vari paragrafi. "
+            "Ogni paragrafo deve avere:\n"
+            "- Un ID numerico progressivo\n"
+            "- Un titolo breve e descrittivo\n"
+            "- Un riassunto \n\n"
+            f"Inoltre, identifica circa {key_concepts_count} concetti chiave del testo. Per ogni concetto, fornisci:\n"
+            "- Un titolo breve e descrittivo\n"
+            "- Una descrizione dettagliata\n"
+            "- Un livello di importanza da 1 a 5\n"
+            "- Sinonimi rilevanti\n"
+            "- Errori comuni o idee sbagliate associate al concetto\n\n"
+            "Inoltre, genera una o più tabelle in formato JSON. Ogni tabella deve avere:\n"
+            "- Un titolo breve\n"
+            "- Dati della tabella in formato JSON (array di oggetti con colonne come 'id', 'prodotto', 'prezzo', ecc.)\n\n"
+            "Restituisci la risposta in formato JSON con la seguente struttura:\n"
+            "{\n"
+            '  "summary": [\n'
+            "    {\n"
+            '      "id": 1,\n'
+            '      "title": "Titolo del paragrafo",\n'
+            '      "summary": "Riassunto del paragrafo"\n'
+            "    }\n"
+            "  ],\n"
+            '  "key_concepts": [\n'
+            "    {\n"
+            '      "id": 1,\n'
+            '      "title": "Titolo del concetto",\n'
             '      "description": "Descrizione del concetto",\n'
             '      "importance": 5,\n'
             '      "synonyms": ["Sinonimo 1", "Sinonimo 2"],\n'
             '      "misconceptions": ["Errore comune 1", "Errore comune 2"]\n'
             "    }\n"
+            "  ],\n"
+            '  "tables": [\n'
+            "    {\n"
+            '      "title": "Tabella Prodotti",\n'
+            '      "data": [\n'
+            "        {\"id\": 201, \"prezzo\": 1200, \"prodotto\": \"Laptop\", \"disponibile\": \"Sì\"},\n"
+            "        {\"id\": 202, \"prezzo\": 800, \"prodotto\": \"Smartphone\", \"disponibile\": \"No\"}\n"
+            "      ]\n"
+            "    }\n"
             "  ]\n"
-        "}\n\n"
-        f"Testo:\n{combined_text}"
+            "}\n\n"
+            f"Testo:\n{combined_text}"
         )
+
 
     # Call Google Gemini API to generate the summary and key concepts
         response_data = generate_response_from_google(prompt)
@@ -202,6 +216,8 @@ def analyze_lesson_resources(
         # Extract the summary and key concepts
         summary_text = response_json.get("summary", "Nessun riassunto generato.")
         key_concepts_data = response_json.get("key_concepts", [])
+        tables_data = response_json.get("tables", [])
+
         # Save the summary
         User = get_user_model()  # Get the active user model dynamically
         user = User.objects.get(pk=1)  # TBD - Replace with actual user
@@ -222,7 +238,14 @@ def analyze_lesson_resources(
                 lesson=lesson,
                 data=concept_data,
             )
-
+        # Save the tables
+        for table_data in tables_data:
+            Table.objects.create(
+                user=user,
+                title=table_data.get("title", "Untitled Table"),  # Handle cases where title might be missing
+                data=table_data.get("data", []),  # Default to empty list if no data is provided
+                lesson=lesson,
+            )
         # Mark lesson as analyzed
         lesson.analyzed = True
         lesson.save()

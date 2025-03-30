@@ -35,6 +35,7 @@ from .models import (
     Summary,
     BackgroundImage,
     Table,
+    Timeline,
 )
 from .serializers import ProjectSerializer, LessonSerializer
 from .tasks import process_pdf_task, analyze_lesson_resources
@@ -608,3 +609,35 @@ def task_detail(request, pk):
         # Delete the task
         task.delete()
         return JsonResponse({'message': 'Task deleted successfully'}, status=204)
+    
+    
+@csrf_exempt
+@api_view(["GET"])
+def timeline_for_lesson(request, lesson_id):
+    """Retrieve all tables for a lesson."""
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    if request.method == "GET":
+        # Fetch all tables for the lesson
+        timelines = Timeline.objects.filter(lesson=lesson)
+        logger.info(f"tables: {timelines}")
+
+        # If no tables exist, return a 404 message
+        if not timelines.exists():
+            return Response({"message": "No tables found for this lesson."}, status=404)
+
+        # Build the response data manually
+        timelines_data = []
+        for timeline in timelines:
+            timelines_data.append(
+                {
+                    "id": timeline.id,
+                    "title": timeline.title,
+                    "data": timeline.data,  # Assuming `data` is a JSONField
+                    "created_at": timeline.created_at,
+                    "updated_at": timeline.updated_at,
+                }
+            )
+
+        # Return the list of tables
+        return Response(timelines_data)
