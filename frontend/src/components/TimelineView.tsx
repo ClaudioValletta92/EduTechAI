@@ -44,13 +44,33 @@ const Timeline = ({ events }: TimelineProps) => {
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-semibold mb-4 text-[#adbbc4]">
-        Timeline StoricaS
+        Timeline Storica
       </h2>
       <div className="h-[400px]">
         <Chrono
-          disableToolbar={true}
-          mode="VERTICAL"
+          items={chronoItems}
+          mode="HORIZONTAL" // Use horizontal layout
           showNavigation={false} // Disable navigation buttons (arrows)
+          disableToolbar={true} // Disable toolbar
+          cardHeight={200} // Adjust card height
+          cardWidth={200} // Adjust card width
+          theme={{
+            primary: "#1d2125",
+            secondary: "transparent",
+            cardBgColor: "#2d3748",
+            cardForeColor: "#adbbc4",
+            titleColor: "#ffffff",
+          }}
+          classNames={{
+            timeline: '!pt-0', // Remove padding
+            controls: '!hidden', // Hide controls
+            card: '!cursor-default', // Disable cursor pointer
+            title: '!text-[#adbbc4] !text-sm',
+          }}
+          fontSizes={{
+            cardTitle: "1.1rem",
+            cardText: "0.9rem",
+          }}
         />
       </div>
     </div>

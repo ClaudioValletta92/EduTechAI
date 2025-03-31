@@ -11,7 +11,8 @@ import SummaryList from "../components/SummaryList";
 import { Plus } from "lucide-react"; // Import the Plus icon
 import TablesList from "../components/TablesList";
 import ConceptMapView from "../components/ConceptMapView";
-import Timeline from "../components/Timeline"; // Import the Timeline component
+import Timeline from "../components/TimelineView";
+
 interface KeyConcept {
   id: number;
   title: string;
