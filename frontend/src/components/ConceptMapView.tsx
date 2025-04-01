@@ -123,7 +123,6 @@ function ConceptMapView({ nodes, edges }: ConceptMapViewProps) {
             annotationNode: AnnotationNode,
           }}
         >
-          <Background />
         </ReactFlow>
       </div>
     </div>

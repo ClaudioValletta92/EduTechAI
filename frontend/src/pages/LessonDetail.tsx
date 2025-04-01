@@ -303,6 +303,10 @@ function LessonDetail() {
                 </div>
               )}
 
+              <div className="mt-4">
+                <h4 className="text-lg font-semibold">Audio</h4>
+                <p>Audio playback will be available here.</p>
+              </div>
             <div className="mt-4">
               <h4 className="text-lg font-semibold">Concetti chiave:</h4>
               {keyConcepts.length > 0 ? (
@@ -322,10 +326,6 @@ function LessonDetail() {
 
                 <Timeline />
 
-              <div className="mt-4">
-                <h4 className="text-lg font-semibold">Audio</h4>
-                <p>Audio playback will be available here.</p>
-              </div>
 
               <div className="mt-4">
                 <h4 className="text-lg font-semibold">Mappa concettuale</h4>
