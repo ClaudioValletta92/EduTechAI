@@ -22,7 +22,7 @@ def generate_response_from_google(prompt):
     """
     try:
         model = genai.GenerativeModel(
-            model_name="models/gemini-1.5-flash",
+            model_name="models/gemini-2.0-flash-lite",
             generation_config=GENERATION_CONFIG,
         )
 

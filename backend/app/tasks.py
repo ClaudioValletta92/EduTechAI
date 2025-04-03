@@ -8,6 +8,7 @@ from .models import (
     Summary,
     KeyConcepts,
     Table,
+    Timeline,
 )
 from .utils import (
     extract_text_from_pdf,
@@ -153,51 +154,63 @@ def analyze_lesson_resources(
 
             # Prepare the prompt for the Google Gemini API
         prompt = (
-            f"Genera un riassunto dettagliato del seguente testo suddiviso in vari paragrafi. "
-            "Ogni paragrafo deve avere:\n"
-            "- Un ID numerico progressivo\n"
-            "- Un titolo breve e descrittivo\n"
-            "- Un riassunto \n\n"
-            f"Inoltre, identifica circa {key_concepts_count} concetti chiave del testo. Per ogni concetto, fornisci:\n"
-            "- Un titolo breve e descrittivo\n"
-            "- Una descrizione dettagliata\n"
-            "- Un livello di importanza da 1 a 5\n"
-            "- Sinonimi rilevanti\n"
-            "- Errori comuni o idee sbagliate associate al concetto\n\n"
-            "Inoltre, genera una o più tabelle in formato JSON. Ogni tabella deve avere:\n"
-            "- Un titolo breve\n"
-            "- Dati della tabella in formato JSON (array di oggetti con colonne come 'id', 'prodotto', 'prezzo', ecc.)\n\n"
-            "Restituisci la risposta in formato JSON con la seguente struttura:\n"
-            "{\n"
-            '  "summary": [\n'
-            "    {\n"
-            '      "id": 1,\n'
-            '      "title": "Titolo del paragrafo",\n'
-            '      "summary": "Riassunto del paragrafo"\n'
-            "    }\n"
-            "  ],\n"
-            '  "key_concepts": [\n'
-            "    {\n"
-            '      "id": 1,\n'
-            '      "title": "Titolo del concetto",\n'
-            '      "description": "Descrizione del concetto",\n'
-            '      "importance": 5,\n'
-            '      "synonyms": ["Sinonimo 1", "Sinonimo 2"],\n'
-            '      "misconceptions": ["Errore comune 1", "Errore comune 2"]\n'
-            "    }\n"
-            "  ],\n"
-            '  "tables": [\n'
-            "    {\n"
-            '      "title": "Tabella Prodotti",\n'
-            '      "data": [\n'
-            "        {\"id\": 201, \"prezzo\": 1200, \"prodotto\": \"Laptop\", \"disponibile\": \"Sì\"},\n"
-            "        {\"id\": 202, \"prezzo\": 800, \"prodotto\": \"Smartphone\", \"disponibile\": \"No\"}\n"
-            "      ]\n"
-            "    }\n"
-            "  ]\n"
-            "}\n\n"
-            f"Testo:\n{combined_text}"
-        )
+                f"Genera un riassunto dettagliato del seguente testo suddiviso in vari paragrafi. "
+                "Ogni paragrafo deve avere:\n"
+                "- Un ID numerico progressivo\n"
+                "- Un titolo breve e descrittivo\n"
+                "- Un riassunto \n\n"
+                f"Inoltre, identifica circa {key_concepts_count} concetti chiave del testo. Per ogni concetto, fornisci:\n"
+                "- Un titolo breve e descrittivo\n"
+                "- Una descrizione dettagliata\n"
+                "- Un livello di importanza da 1 a 5\n"
+                "- Sinonimi rilevanti\n"
+                "- Errori comuni o idee sbagliate associate al concetto\n\n"
+                "Inoltre, genera una o più tabelle in formato JSON. Ogni tabella deve avere:\n"
+                "- Un titolo breve\n"
+                "- Dati della tabella in formato JSON (array di oggetti con colonne come 'id', 'prodotto', 'prezzo', ecc.)\n\n"
+                "Inoltre, fornisci un elenco delle principali tappe temporali (timeline) nel testo. Ogni evento nella timeline deve avere:\n"
+                "- Un titolo descrittivo dell'evento\n"
+                "- Una descrizione dell'evento\n"
+                "- Una data o periodo in formato numerico o stringa\n\n"
+                "Restituisci la risposta in formato JSON con la seguente struttura:\n"
+                "{\n"
+                '  "summary": [\n'
+                "    {\n"
+                '      "id": 1,\n'
+                '      "title": "Titolo del paragrafo",\n'
+                '      "summary": "Riassunto del paragrafo"\n'
+                "    }\n"
+                "  ],\n"
+                '  "key_concepts": [\n'
+                "    {\n"
+                '      "id": 1,\n'
+                '      "title": "Titolo del concetto",\n'
+                '      "description": "Descrizione del concetto",\n'
+                '      "importance": 5,\n'
+                '      "synonyms": ["Sinonimo 1", "Sinonimo 2"],\n'
+                '      "misconceptions": ["Errore comune 1", "Errore comune 2"]\n'
+                "    }\n"
+                "  ],\n"
+                '  "tables": [\n'
+                "    {\n"
+                '      "title": "Tabella Prodotti",\n'
+                '      "data": [\n'
+                "        {\"id\": 201, \"prezzo\": 1200, \"prodotto\": \"Laptop\", \"disponibile\": \"Sì\"},\n"
+                "        {\"id\": 202, \"prezzo\": 800, \"prodotto\": \"Smartphone\", \"disponibile\": \"No\"}\n"
+                "      ]\n"
+                "    }\n"
+                "  ],\n"
+                '  "timeline": [\n'
+                "    {\n"
+                '      "title": "Battaglia di Azios",\n'
+                '      "description": "Ottaviano sconfigge Marco Antonio, fine delle guerre civili",\n'
+                '      "date": "32 a.C."\n'
+                "    }\n"
+                "  ]\n"
+                "}\n\n"
+                f"Testo:\n{combined_text}"
+            )
+
 
 
     # Call Google Gemini API to generate the summary and key concepts
@@ -217,6 +230,7 @@ def analyze_lesson_resources(
         summary_text = response_json.get("summary", "Nessun riassunto generato.")
         key_concepts_data = response_json.get("key_concepts", [])
         tables_data = response_json.get("tables", [])
+        timeline_data = response_json.get("timeline", [])
 
         # Save the summary
         User = get_user_model()  # Get the active user model dynamically
@@ -230,7 +244,17 @@ def analyze_lesson_resources(
             },
         )
         summary.save()
-
+        
+        timeline, created = Timeline.objects.get_or_create(
+            lesson=lesson,
+            defaults={
+                "user": user,
+                "title": f" Timeline for Lesson {lesson_id}",
+                "data": timeline_data,  # Store the generated summary
+            },
+        )
+        timeline.save()
+    
         # Save the key concepts
         for concept_data in key_concepts_data:
             KeyConcepts.objects.create(

@@ -71,9 +71,11 @@ interface ConceptMapViewProps {
     type?: string;
     style?: { stroke: string; strokeWidth: number };
   }>;
+  showEditButton?: boolean; // Add the new prop to control button visibility
+
 }
 
-function ConceptMapView({ nodes, edges }: ConceptMapViewProps) {
+function ConceptMapView({ nodes, edges, showEditButton = true}: ConceptMapViewProps) {
   console.log("nodes", nodes);
   console.log("edges", edges);
 
@@ -89,24 +91,26 @@ function ConceptMapView({ nodes, edges }: ConceptMapViewProps) {
   return (
     <div style={{ position: "relative", width: "100%" }}>
       {/* Link to the full editor */}
-      <Link
-        to="/concept-map/edit" // Replace with your actual edit route
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          padding: "8px 12px",
-          backgroundColor: "blue",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          zIndex: 10,
-          textDecoration: "none",
-        }}
-      >
-        Edit Concept Map
-      </Link>
+      {showEditButton && (
+        <Link
+          to="/concept-map/edit" // Replace with your actual edit route
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            padding: "8px 12px",
+            backgroundColor: "blue",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            zIndex: 10,
+            textDecoration: "none",
+          }}
+        >
+          Edit Concept Map
+        </Link>
+      )}
 
       {/* Concept Map */}
       <div style={{ width: "100%", height: "500px" }}>

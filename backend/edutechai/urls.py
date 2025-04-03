@@ -78,4 +78,6 @@ urlpatterns = [
     path('api/tasks/', views.task_list, name='task-list'),  # Fetch tasks for the logged-in user # type: ignore
     path('api/tasks/<int:pk>/', views.task_detail, name='task-detail'),  # Ensure task_detail is a callable view function # type: ignore
     path('api/lessons/<int:lesson_id>/timelines/', views.timeline_for_lesson, name='lesson-timelines'),  # Modify or delete a specific task for the logged-in user # type: ignore
+    path('api/lessons/<int:lesson_id>/causeeffects/', views.cause_effect_for_lesson, name='lesson-cause-effects'),  # Modify or delete a specific task for the logged-in user # type: ignore
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

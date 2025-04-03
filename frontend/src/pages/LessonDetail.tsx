@@ -29,6 +29,13 @@ interface FetchedSummary {
   updated_at: string;
   lesson: string;
 }
+interface TimelineEvent {
+  title: string;       // Date or time (e.g., "32 a.C.")
+  event: string;       // Name of the event (e.g., "Battaglia di Azios")
+  description: string; // Detailed description of the event
+}
+
+
 interface Lesson {
   id: number;
   title: string;
@@ -91,6 +98,7 @@ function LessonDetail() {
   const [analyzed, setAnalyzed] = useState(false);
   const [conceptMap, setConceptMap] = useState<{ title: string } | null>(null);
   const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]);
+  const [timelineData, setTimeline] = useState<TimelineEvent[]>([]);
   const [summary, setSummary] = useState<FetchedSummary | null>(null); // Initialize as null
   const [tables, setTables] = useState<
     Array<{ id: number; title: string; data: Array<{ [key: string]: any }> }>
@@ -153,6 +161,28 @@ function LessonDetail() {
           setTables(data);
         })
         .catch((error) => console.error("Error fetching tables:", error));
+
+      fetch(`http://localhost:8000/api/lessons/${lessonId}/timelines/`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Fetched Timeline:", data);
+                  // Check if we received valid timeline data
+          if (data && Array.isArray(data.data)) {
+            console.log("INSIDE IF")
+          const extractedEvents = data.data.map((event: any) => ({
+            title: event.date,       // Map `date` to `title`
+            event: event.title,      // Map `title` to `event`
+            description: event.description || "", // Ensure description is never undefined
+          }));
+
+          setTimeline(extractedEvents);
+        } else {
+          console.warn("No valid timeline data found.");
+          setTimeline([]); // Ensure we don't pass undefined or null
+
+        }
+        })
+        .catch((error) => console.error("Error fetching Timelines:", error));
     }
   }, [lessonId, analyzed]);
 
@@ -324,13 +354,28 @@ function LessonDetail() {
               )}
             </div>
 
-                <Timeline />
+            <div className="flex justify-center overflow-x-auto mt-4">
+            <h4 className="text-lg font-semibold">Linea temporale</h4>
+                <Timeline events={timelineData} />
+            </div>
+            <div className="mt-4">
+  <h4 className="text-lg font-semibold">Diagrammi causa effetto</h4>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <ConceptMapView nodes={nodes} edges={edges} showEditButton={false}/>
+    <ConceptMapView nodes={nodes} edges={edges} showEditButton={false}/>
+    <ConceptMapView nodes={nodes} edges={edges} showEditButton={false}/>
+    <ConceptMapView nodes={nodes} edges={edges} showEditButton={false}/>
+    <ConceptMapView nodes={nodes} edges={edges} showEditButton={false}/>
+  </div>
+</div>
 
 
-              <div className="mt-4">
-                <h4 className="text-lg font-semibold">Mappa concettuale</h4>
-                <ConceptMapView nodes={nodes} edges={edges} />
-              </div>
+{/* 
+  <div className="mt-4">
+    <h4 className="text-lg font-semibold">Mappa concettuale</h4>
+    <ConceptMapView nodes={nodes} edges={edges} showEditButton={true} />
+  </div>
+*/}
             </div>
           )}
         </main>

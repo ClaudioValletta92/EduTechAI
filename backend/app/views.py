@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 from django.views.decorators.http import require_GET
 import time
-from .models import Task
+from .models import CauseEffect, Task
 
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
@@ -610,34 +610,59 @@ def task_detail(request, pk):
         task.delete()
         return JsonResponse({'message': 'Task deleted successfully'}, status=204)
     
-    
 @csrf_exempt
 @api_view(["GET"])
 def timeline_for_lesson(request, lesson_id):
+    """Retrieve the timeline for a lesson."""
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    if request.method == "GET":
+        # Fetch the first timeline for the lesson (assuming one per lesson)
+        timeline = Timeline.objects.filter(lesson=lesson).first()
+
+        # If no timeline exists, return a 404 message
+        if not timeline:
+            return Response({"message": "No timeline found for this lesson."}, status=404)
+
+        # Build the response data manually
+        timeline_data = {
+            "id": timeline.id,
+            "title": timeline.title,
+            "data": timeline.data,  # Assuming `data` is a JSONField
+            "created_at": timeline.created_at,
+            "updated_at": timeline.updated_at,
+        }
+
+        return Response(timeline_data)
+
+
+@csrf_exempt
+@api_view(["GET"])
+def cause_effect_for_lesson(request, lesson_id):
     """Retrieve all tables for a lesson."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
 
     if request.method == "GET":
         # Fetch all tables for the lesson
-        timelines = Timeline.objects.filter(lesson=lesson)
-        logger.info(f"tables: {timelines}")
+        causeeffects = CauseEffect.objects.filter(lesson=lesson)
+        logger.info(f"cause effects: {causeeffects}")
 
         # If no tables exist, return a 404 message
-        if not timelines.exists():
+        if not causeeffects.exists():
             return Response({"message": "No tables found for this lesson."}, status=404)
 
         # Build the response data manually
-        timelines_data = []
-        for timeline in timelines:
-            timelines_data.append(
+        causeeffects_data = []
+        for causeeffect in causeeffects:
+            causeeffects_data.append(
                 {
-                    "id": timeline.id,
-                    "title": timeline.title,
-                    "data": timeline.data,  # Assuming `data` is a JSONField
-                    "created_at": timeline.created_at,
-                    "updated_at": timeline.updated_at,
+                    "id": causeeffect.id,
+                    "title": causeeffect.title,
+                    "data": causeeffect.data,  # Assuming `data` is a JSONField
+                    "created_at": causeeffect.created_at,
+                    "updated_at": causeeffect.updated_at,
                 }
             )
 
         # Return the list of tables
-        return Response(timelines_data)
+        return Response(causeeffects_data)

@@ -105,6 +105,21 @@ class Timeline(models.Model):
 
     def __str__(self):
         return f"{self.title} (by {self.user.username})"
+    
+class CauseEffect(models.Model):
+    """Stores a timeline in JSON format for easy retrieval and modification."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    data = models.JSONField()  # Stores React Flow JSON (nodes, edges)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    lesson = models.OneToOneField(  # Each lesson has ONE conceptual map
+        "Lesson", on_delete=models.CASCADE, related_name="cause_effect"
+    )
+
+    def __str__(self):
+        return f"{self.title} (by {self.user.username})"
 
 
 class KeyConcepts(models.Model):
