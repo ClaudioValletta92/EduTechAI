@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+import requests
 
 
 class BackgroundImage(models.Model):
@@ -105,6 +106,42 @@ class Timeline(models.Model):
 
     def __str__(self):
         return f"{self.title} (by {self.user.username})"
+    
+class MentionedPerson(models.Model):
+    """Stores a person mentioned in a lesson, with automatic Wikipedia image fetching."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(max_length=500)
+    bio = models.TextField(blank=True, null=True)  # Allow blank/None
+    image_url = models.URLField(max_length=500, blank=True, null=True)  # Allow blank/None
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    lesson = models.ForeignKey("Lesson", on_delete=models.CASCADE, related_name="mentioned_people")
+
+    def __str__(self):
+        return f"{self.name} (by {self.user.username})"
+
+    def fetch_wikipedia_image(self):
+        def get_image(lang):
+            try:
+                url = f"https://{lang}.wikipedia.org/api/rest_v1/page/summary/{self.name.replace(' ', '_')}"
+                response = requests.get(url, timeout=5)
+                if response.status_code == 200:
+                    data = response.json()
+                    return data.get("thumbnail", {}).get("source", None)
+            except Exception:
+                pass
+            return None
+
+        # Try Italian first, fallback to English
+        return get_image("it") or get_image("en")
+
+    def save(self, *args, **kwargs):
+        # Only fetch image if not already set
+        if not self.image_url:
+            image_url = self.fetch_wikipedia_image()
+            self.image_url = image_url if image_url else None
+        super().save(*args, **kwargs)
     
 class CauseEffect(models.Model):
     """Stores a timeline in JSON format for easy retrieval and modification."""

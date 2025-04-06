@@ -9,6 +9,7 @@ from .models import (
     KeyConcepts,
     Table,
     Timeline,
+    MentionedPerson
 )
 from .utils import (
     extract_text_from_pdf,
@@ -172,6 +173,9 @@ def analyze_lesson_resources(
                 "- Un titolo descrittivo dell'evento\n"
                 "- Una descrizione completa dell'evento\n"
                 "- Una data o periodo in formato numerico o stringa\n\n"
+                "Infine, identifica le persone più importanti menzionate nel testo. Per ciascuna persona fornisci:\n"
+                "- Il nome completo\n"
+                "- Una biografia \n\n"
                 "Restituisci la risposta in formato JSON con la seguente struttura:\n"
                 "{\n"
                 '  "summary": [\n'
@@ -207,6 +211,12 @@ def analyze_lesson_resources(
                 '      "date": "32 a.C."\n'
                 "    }\n"
                 "  ]\n"
+                ' "people": [\n'
+                "    {\n"
+                '      "name": "Giulio Cesare",\n'
+                '      "bio": "Generale e politico romano, fu uno dei protagonisti della fine della Repubblica e l’inizio dell’Impero."\n'
+                "    }\n"
+                "  ]\n"
                 "}\n\n"
                 f"Testo:\n{combined_text}"
             )
@@ -231,6 +241,7 @@ def analyze_lesson_resources(
         key_concepts_data = response_json.get("key_concepts", [])
         tables_data = response_json.get("tables", [])
         timeline_data = response_json.get("timeline", [])
+        mentioned_people = response_json.get("people", [])
 
         # Save the summary
         User = get_user_model()  # Get the active user model dynamically
@@ -270,6 +281,18 @@ def analyze_lesson_resources(
                 data=table_data.get("data", []),  # Default to empty list if no data is provided
                 lesson=lesson,
             )
+        for person_data in mentioned_people:
+            name = person_data.get("name")
+            bio = person_data.get("bio")  # se vuoi salvarla dopo
+
+            if name:
+                MentionedPerson.objects.create(
+                    user=user,
+                    lesson=lesson,
+                    name=name,
+                    bio=bio,
+                    image_url=None  # verrà popolato con Wikipedia nell'override di `save()`
+                )
         # Mark lesson as analyzed
         lesson.analyzed = True
         lesson.save()

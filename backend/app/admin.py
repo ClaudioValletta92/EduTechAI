@@ -15,6 +15,7 @@ from .models import (
     Task,
     ImportantDate,
     Timeline,
+    MentionedPerson,
 )
 
 admin.site.register(CustomUser)
@@ -32,4 +33,5 @@ admin.site.register(Payment)
 admin.site.register(Task)
 admin.site.register(ImportantDate)
 admin.site.register(Timeline)
+admin.site.register(MentionedPerson)
 admin.site.site_header = "AI Tutor Admin"

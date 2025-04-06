@@ -13,7 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 from django.views.decorators.http import require_GET
 import time
-from .models import CauseEffect, Task
+from .models import CauseEffect, MentionedPerson, Task
 
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
@@ -666,3 +666,35 @@ def cause_effect_for_lesson(request, lesson_id):
 
         # Return the list of tables
         return Response(causeeffects_data)
+    
+    
+
+@csrf_exempt
+@api_view(["GET"])
+def people_for_lesson(request, lesson_id):
+    """Retrieve all tables for a lesson."""
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+
+    if request.method == "GET":
+        # Fetch all tables for the lesson
+        people = MentionedPerson.objects.filter(lesson=lesson)
+        logger.info(f"cause effects: {people}")
+
+        # If no tables exist, return a 404 message
+        if not people.exists():
+            return Response({"message": "No tables found for this lesson."}, status=404)
+
+        # Build the response data manually
+        people_data = []
+        for person in people:
+            people_data.append(
+                {
+                    "id": person.id,
+                    "name": person.name,
+                    "bio": person.bio,  # Assuming `data` is a JSONField
+                    "image_url": person.image_url,  # Assuming `data` is a JSONField
+                }
+            )
+
+        # Return the list of tables
+        return Response(people_data)
