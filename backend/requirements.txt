@@ -23,7 +23,6 @@ django-cors-headers
 spacy
 blis
 thinc
-gensim
 nltk
 PyPDF2
 python-decouple
@@ -31,3 +30,5 @@ psycopg2-binary
 dj-database-url
 google-generativeai
 Pillow
+gensim==4.3.3
+scipy==1.10.1
