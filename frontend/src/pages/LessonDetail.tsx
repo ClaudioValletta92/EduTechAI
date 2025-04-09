@@ -12,7 +12,7 @@ import { Plus } from "lucide-react"; // Import the Plus icon
 import TablesList from "../components/TablesList";
 import ConceptMapView from "../components/ConceptMapView";
 import Timeline from "../components/TimelineView";
-
+import MentionedPeopleList from "../components/MentionedPeopleList";
 interface KeyConcept {
   id: number;
   title: string;
@@ -33,6 +33,12 @@ interface TimelineEvent {
   title: string;       // Date or time (e.g., "32 a.C.")
   event: string;       // Name of the event (e.g., "Battaglia di Azios")
   description: string; // Detailed description of the event
+}
+
+interface Person{
+  name:string;
+  bio:string;
+  image_url:string;
 }
 
 
@@ -98,6 +104,7 @@ function LessonDetail() {
   const [analyzed, setAnalyzed] = useState(false);
   const [conceptMap, setConceptMap] = useState<{ title: string } | null>(null);
   const [keyConcepts, setKeyConcepts] = useState<KeyConcept[]>([]);
+  const [mentionedPeople, setMentionedPeople] = useState<Person[]>([]);
   const [timelineData, setTimeline] = useState<TimelineEvent[]>([]);
   const [summary, setSummary] = useState<FetchedSummary | null>(null); // Initialize as null
   const [tables, setTables] = useState<
@@ -125,6 +132,14 @@ function LessonDetail() {
         setResources(data.resources);
       })
       .catch((error) => console.error("Error fetching resources:", error));
+
+          // Fetch lesson resources
+    fetch(`http://localhost:8000/api/lessons/${lessonId}/people`)
+    .then((res) => res.json())
+    .then((data) => {
+      setMentionedPeople(data);
+    })
+    .catch((error) => console.error("Error fetching resources:", error));
 
     // Fetch conceptual map if the lesson is analyzed
     if (analyzed) {
@@ -357,6 +372,9 @@ function LessonDetail() {
             <div className="flex justify-center overflow-x-auto mt-4">
             <h4 className="text-lg font-semibold">Linea temporale</h4>
                 <Timeline events={timelineData} />
+            </div>
+            <div className="mt-4">
+            <MentionedPeopleList people={mentionedPeople} />
             </div>
             <div className="mt-4">
   <h4 className="text-lg font-semibold">Diagrammi causa effetto</h4>
