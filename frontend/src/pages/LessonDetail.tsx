@@ -373,9 +373,12 @@ function LessonDetail() {
             <h4 className="text-lg font-semibold">Linea temporale</h4>
                 <Timeline events={timelineData} />
             </div>
-            <div className="mt-4">
+                    {mentionedPeople.length > 0 && (
+          <div className="mt-4">
             <MentionedPeopleList people={mentionedPeople} />
-            </div>
+          </div>
+        )}
+
             <div className="mt-4">
   <h4 className="text-lg font-semibold">Diagrammi causa effetto</h4>
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
